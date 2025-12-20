@@ -43,17 +43,17 @@ def phq9_q9(q9):
         return False
 
     # AUDIT-C scoring - Alcohol abuse
-def auditc_scoring(auditc_1, auditc_2, auditc_3):
-    q1 = auditc_1.currentIndex()
-    q2 = auditc_2.currentIndex()
-    q3 = auditc_3.currentIndex()
+def auditc_scoring(combobox_input):
+    q1 = combobox_input[0].currentIndex()
+    q2 = combobox_input[1].currentIndex()
+    q3 = combobox_input[2].currentIndex()
 
     total_score = q1 + q2 + q3
     return total_score
 
     # Eat26 scoring - Eating habits
 def eat26_calculate_values(combobox_input):
-    q = combobox_input.comboBox.currentIndex()
+    q = combobox_input.currentIndex()
     if q == 3:
         return 1
     elif q == 4:
@@ -71,7 +71,7 @@ def eat26_scoring(comboboxes):
         total_score += eat26_calculate_values(cb)
 
     # question 26 (reverse scored)
-    q26_index = comboboxes[-1].comboBox.currentIndex()
+    q26_index = comboboxes[-1].currentIndex()
 
     if q26_index == 0:
         q26_score = 3

@@ -386,7 +386,7 @@ class TrackDepressionWindow(QDialog):
             trackable_id = result[0]
 
             sql_cursor.execute(
-                "INSERT INTO user_trackables_entries"
+                "INSERT INTO user_trackables_entries "
                 "(user_trackablesID, entry_date, value)"
                 "VALUES (?, ?, ?)",
                 (trackable_id, date_now, depression_value)
@@ -394,7 +394,7 @@ class TrackDepressionWindow(QDialog):
 
             if q9_bool:
                 sql_cursor.execute(
-                "INSERT INTO bool_user_trackables"
+                "INSERT INTO bool_user_trackables "
                 "(user_trackablesID, bool_value)"
                 "VALUES (?, ?)",
                 (trackable_id, q9_bool)
@@ -494,14 +494,14 @@ class TrackSleepWindow(QDialog):
             trackable_id_length = result[1][0]
 
             sql_cursor.execute(
-                "INSERT INTO user_trackables_entries"
+                "INSERT INTO user_trackables_entries "
                 "(user_trackablesID, entry_date, value)"
                 "VALUES (?, ?, ?)",
                 (trackable_id_quality, date_now, sleep_quality_value)
             )
 
             sql_cursor.execute(
-                "INSERT INTO user_trackables_entries"
+                "INSERT INTO user_trackables_entries "
                 "(user_trackablesID, entry_date, value)"
                 "VALUES (?, ?, ?)",
                 (trackable_id_length, date_now, sleep_length_value)
@@ -518,11 +518,14 @@ class TrackSleepWindow(QDialog):
 class TrackSelfHarmWindow(QDialog):
     def __init__(self, user_ID, parent=None):
         super().__init__(parent)
+
+        self.user_ID = user_ID
+
         self.setWindowTitle("Self Harm Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 800
-        win_width = 600
+        win_height = 150
+        win_width = 300
         self.resize(win_width, win_height)
         self.center()
 
@@ -530,11 +533,58 @@ class TrackSelfHarmWindow(QDialog):
 
         layout = QVBoxLayout()
 
+        self_harm_label = QLabel("Did self-harm occur?")
 
+        self.self_harm_combobox = QComboBox()
+        self.self_harm_combobox.addItem("No")
+        self.self_harm_combobox.addItem("Yes")
 
-        widget = QWidget()
-        widget.setLayout(layout)
+        self.self_harm_submit_button = QPushButton("Submit")
+        self.self_harm_submit_button.clicked.connect(lambda: (self.submit_self_harm(), self.close()))
+
+        layout.addWidget(self_harm_label)
+        layout.addWidget(self.self_harm_combobox)
+        layout.addWidget(self.self_harm_submit_button)
+
         self.setLayout(layout)
+
+    def submit_self_harm(self):
+        try:
+            sql_conn = sqlite3.connect("healthapp.db")
+            sql_cursor = sql_conn.cursor()
+
+            date_now = datetime.now().date().isoformat()
+            self_harm_bool = self.self_harm_combobox.currentIndex()
+
+            sql_cursor.execute(
+                "SELECT user_trackablesID "
+                "FROM user_trackables "
+                "WHERE trackableID = 5 AND userID = ?"
+                "ORDER BY trackableID ASC",
+                (self.user_ID,)
+            )
+
+            result = sql_cursor.fetchone()
+            if result is None:
+                print("No trackable found for this user.")
+                return
+
+            trackable_id = result[0]
+
+            sql_cursor.execute(
+                "INSERT INTO user_trackables_entries "
+                "(user_trackablesID, entry_date, value)"
+                "VALUES (?, ?, ?)",
+                (trackable_id, date_now, self_harm_bool)
+            )
+
+            sql_conn.commit()
+
+        except Exception as e:
+            print("Error submitting sleep values:", e)
+
+        finally:
+            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -547,13 +597,16 @@ class TrackSelfHarmWindow(QDialog):
         self.move(x, y)
 
 class TrackAlcoholAbuseWindow(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, user_ID, parent=None):
         super().__init__(parent)
+
+        self.user_ID = user_ID
+
         self.setWindowTitle("Alcohol Abuse Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 800
-        win_width = 600
+        win_height = 600
+        win_width = 300
         self.resize(win_width, win_height)
         self.center()
 
@@ -561,9 +614,85 @@ class TrackAlcoholAbuseWindow(QDialog):
 
         layout = QVBoxLayout()
 
-        widget = QWidget()
-        widget.setLayout(layout)
+        alcohol_abuse_label = QLabel("Alcohol Abuse Explanation")
+        auditc_label_q1 = QLabel("How often do you have a drink containing alcohol?")
+        auditc_label_q2 = QLabel("How many drinks containing alcohol do you have on a typical day when you are drinking?")
+        auditc_label_q3 = QLabel("How often do you have six or more drinks on one occasion?")
+
+        self.auditc_combobox_q1 = QComboBox()
+        self.auditc_combobox_q1.addItem("Never")
+        self.auditc_combobox_q1.addItem("Monthly or less")
+        self.auditc_combobox_q1.addItem("2-4 times a month")
+        self.auditc_combobox_q1.addItem("2-3 times a week")
+        self.auditc_combobox_q1.addItem("4 or more times a week")
+
+        self.auditc_combobox_q2 = QComboBox()
+        self.auditc_combobox_q2.addItem("1 or 2")
+        self.auditc_combobox_q2.addItem("3 or 4")
+        self.auditc_combobox_q2.addItem("5 or 6")
+        self.auditc_combobox_q2.addItem("7 or 9")
+        self.auditc_combobox_q2.addItem("10 or more")
+
+        self.auditc_combobox_q3 = QComboBox()
+        self.auditc_combobox_q3.addItem("Never")
+        self.auditc_combobox_q3.addItem("Less than monthly")
+        self.auditc_combobox_q3.addItem("Monthly")
+        self.auditc_combobox_q3.addItem("Weekly")
+        self.auditc_combobox_q3.addItem("Daily or almost daily")
+
+        self.auditc_combobox_list = (self.auditc_combobox_q1, self.auditc_combobox_q2, self.auditc_combobox_q3)
+
+        self.auditc_submit_button = QPushButton("Submit")
+        self.auditc_submit_button.clicked.connect(lambda: (self.submit_alcohol_abuse(), self.close()))
+
+        layout.addWidget(alcohol_abuse_label)
+        layout.addWidget(auditc_label_q1)
+        layout.addWidget(self.auditc_combobox_q1)
+        layout.addWidget(auditc_label_q2)
+        layout.addWidget(self.auditc_combobox_q2)
+        layout.addWidget(auditc_label_q3)
+        layout.addWidget(self.auditc_combobox_q3)
+        layout.addWidget(self.auditc_submit_button)
+
         self.setLayout(layout)
+
+    def submit_alcohol_abuse(self):
+        try:
+            sql_conn = sqlite3.connect("healthapp.db")
+            sql_cursor = sql_conn.cursor()
+
+            date_now = datetime.now().date().isoformat()
+            alcohol_abuse_value = auditc_scoring(self.auditc_combobox_list)
+
+            sql_cursor.execute(
+                "SELECT user_trackablesID "
+                "FROM user_trackables "
+                "WHERE trackableID = 6 AND userID = ?"
+                "ORDER BY trackableID ASC",
+                (self.user_ID,)
+            )
+
+            result = sql_cursor.fetchone()
+            if result is None:
+                print("No trackable found for this user.")
+                return
+
+            trackable_id = result[0]
+
+            sql_cursor.execute(
+                "INSERT INTO user_trackables_entries "
+                "(user_trackablesID, entry_date, value)"
+                "VALUES (?, ?, ?)",
+                (trackable_id, date_now, alcohol_abuse_value)
+            )
+
+            sql_conn.commit()
+
+        except Exception as e:
+            print("Error submitting alcohol abuse values:", e)
+
+        finally:
+            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -575,8 +704,11 @@ class TrackAlcoholAbuseWindow(QDialog):
         self.move(x, y)
 
 class TrackDrugAbuseWindow(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, user_ID, parent=None):
         super().__init__(parent)
+
+        self.user_ID = user_ID
+
         self.setWindowTitle("Drug Abuse Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
@@ -589,9 +721,70 @@ class TrackDrugAbuseWindow(QDialog):
 
         layout = QVBoxLayout()
 
-        widget = QWidget()
-        widget.setLayout(layout)
+        drug_abuse_label_q1 = QLabel("Have you recently used drugs more than you meant to?")
+        drug_abuse_label_q2 = QLabel("Have you felt you wanted or needed to cut down on your drug use?")
+
+        self.drug_abuse_combobox_q1 = QComboBox()
+        self.drug_abuse_combobox_q1.addItem("No")
+        self.drug_abuse_combobox_q1.addItem("Yes")
+
+        self.drug_abuse_combobox_q2 = QComboBox()
+        self.drug_abuse_combobox_q2.addItem("No")
+        self.drug_abuse_combobox_q2.addItem("Yes")
+
+        self.drug_abuse_submit_button = QPushButton("Submit")
+        self.drug_abuse_submit_button.clicked.connect(lambda: (self.submit_drug_abuse(), self.close()))
+
+        layout.addWidget(drug_abuse_label_q1)
+        layout.addWidget(self.drug_abuse_combobox_q1)
+        layout.addWidget(drug_abuse_label_q2)
+        layout.addWidget(self.drug_abuse_combobox_q2)
+        layout.addWidget(self.drug_abuse_submit_button)
+
         self.setLayout(layout)
+
+    def submit_drug_abuse(self):
+        try:
+            sql_conn = sqlite3.connect("healthapp.db")
+            sql_cursor = sql_conn.cursor()
+
+            date_now = datetime.now().date().isoformat()
+            drug_abuse_bool_q1 = self.drug_abuse_combobox_q1.currentIndex()
+            drug_abuse_bool_q2 = self.drug_abuse_combobox_q2.currentIndex()
+            drug_abuse_bool = 0
+
+            if drug_abuse_bool_q1 == 1 or drug_abuse_bool_q2 == 1:
+                drug_abuse_bool = 1
+
+            sql_cursor.execute(
+                "SELECT user_trackablesID "
+                "FROM user_trackables "
+                "WHERE trackableID = 7 AND userID = ?"
+                "ORDER BY trackableID ASC",
+                (self.user_ID,)
+            )
+
+            result = sql_cursor.fetchone()
+            if result is None:
+                print("No trackable found for this user.")
+                return
+
+            trackable_id = result[0]
+
+            sql_cursor.execute(
+                "INSERT INTO user_trackables_entries "
+                "(user_trackablesID, entry_date, value)"
+                "VALUES (?, ?, ?)",
+                (trackable_id, date_now, drug_abuse_bool)
+            )
+
+            sql_conn.commit()
+
+        except Exception as e:
+            print("Error submitting drug abuse value:", e)
+
+        finally:
+            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -603,13 +796,16 @@ class TrackDrugAbuseWindow(QDialog):
         self.move(x, y)
 
 class TrackEatingHabitsWindow(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, user_ID, parent=None):
         super().__init__(parent)
+
+        self.user_ID = user_ID
+
         self.setWindowTitle("Eating Habits Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 800
-        win_width = 600
+        win_height = 600
+        win_width = 800
         self.resize(win_width, win_height)
         self.center()
 
@@ -617,9 +813,152 @@ class TrackEatingHabitsWindow(QDialog):
 
         layout = QVBoxLayout()
 
-        widget = QWidget()
-        widget.setLayout(layout)
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+
+        content_widget.setStyleSheet(_style)
+
+        eat26_label_explanation = QLabel("Explanation")
+        eat26_label_q1 = QLabel("I am terrified about being overweight.")
+        eat26_label_q2 = QLabel("I avoid eating when I am hungry.")
+        eat26_label_q3 = QLabel("I find myself preoccupied with food.")
+        eat26_label_q4 = QLabel("I have gone on eating binges where I felt that I may not be able to stop.")
+        eat26_label_q5 = QLabel("I have cut my food into small pieces.")
+        eat26_label_q6 = QLabel("I am aware of the calorie content of foods that I eat.")
+        eat26_label_q7 = QLabel("I particularly avoid food with a high carbohydrates content. (i.e. bread, rice, potatoes, etc.)")
+        eat26_label_q8 = QLabel("I feel that others would prefer if I ate more.")
+        eat26_label_q9 = QLabel("I vomit after I have eaten.")
+        eat26_label_q10 = QLabel("I feel extremely guilty after eating.")
+        eat26_label_q11 = QLabel("I am preoccupied with a desire to be thinner.")
+        eat26_label_q12 = QLabel("I think about burning up calories when I exercise.")
+        eat26_label_q13 = QLabel("Other people think that I am too thin.")
+        eat26_label_q14 = QLabel("I am preoccupied with the thought of having fat on my body.")
+        eat26_label_q15 = QLabel("I take longer than others to eat my meals.")
+        eat26_label_q16 = QLabel("I avoid foods with sugar in them.")
+        eat26_label_q17 = QLabel("I eat diet foods.")
+        eat26_label_q18 = QLabel("I feel that food controls my life.")
+        eat26_label_q19 = QLabel("I display self control around food.")
+        eat26_label_q20 = QLabel("I feel that others pressure me to eat.")
+        eat26_label_q21 = QLabel("I give too much time and thought to food.")
+        eat26_label_q22 = QLabel("I feel uncomfortable after eating sweets.")
+        eat26_label_q23 = QLabel("I engage in dieting behaviour.")
+        eat26_label_q24 = QLabel("I like my stomach to be empty.")
+        eat26_label_q25 = QLabel("I have the impulse to vomit after meals.")
+        eat26_label_q26 = QLabel("I enjoy trying new rich foods.")
+
+        eat26_label_list = (eat26_label_q1, eat26_label_q2, eat26_label_q3, eat26_label_q4, eat26_label_q5, eat26_label_q6, eat26_label_q7, eat26_label_q8, eat26_label_q9, eat26_label_q10, eat26_label_q11, eat26_label_q12, eat26_label_q13, eat26_label_q14, eat26_label_q15, eat26_label_q16, eat26_label_q17, eat26_label_q18, eat26_label_q19, eat26_label_q20, eat26_label_q21, eat26_label_q22, eat26_label_q23, eat26_label_q24, eat26_label_q25, eat26_label_q26)
+
+        self.eat26_combobox_q1 = QComboBox()
+        self.eat26_combobox_q2 = QComboBox()
+        self.eat26_combobox_q3 = QComboBox()
+        self.eat26_combobox_q4 = QComboBox()
+        self.eat26_combobox_q5 = QComboBox()
+        self.eat26_combobox_q6 = QComboBox()
+        self.eat26_combobox_q7 = QComboBox()
+        self.eat26_combobox_q8 = QComboBox()
+        self.eat26_combobox_q9 = QComboBox()
+        self.eat26_combobox_q10 = QComboBox()
+        self.eat26_combobox_q11 = QComboBox()
+        self.eat26_combobox_q12 = QComboBox()
+        self.eat26_combobox_q13 = QComboBox()
+        self.eat26_combobox_q14 = QComboBox()
+        self.eat26_combobox_q15 = QComboBox()
+        self.eat26_combobox_q16 = QComboBox()
+        self.eat26_combobox_q17 = QComboBox()
+        self.eat26_combobox_q18 = QComboBox()
+        self.eat26_combobox_q19 = QComboBox()
+        self.eat26_combobox_q20 = QComboBox()
+        self.eat26_combobox_q21 = QComboBox()
+        self.eat26_combobox_q22 = QComboBox()
+        self.eat26_combobox_q23 = QComboBox()
+        self.eat26_combobox_q24 = QComboBox()
+        self.eat26_combobox_q25 = QComboBox()
+        self.eat26_combobox_q26 = QComboBox()
+
+        self.eat26_combobox_list = (
+            self.eat26_combobox_q1, self.eat26_combobox_q2, self.eat26_combobox_q3,
+            self.eat26_combobox_q4, self.eat26_combobox_q5, self.eat26_combobox_q6,
+            self.eat26_combobox_q7, self.eat26_combobox_q8, self.eat26_combobox_q9,
+            self.eat26_combobox_q10, self.eat26_combobox_q11, self.eat26_combobox_q12,
+            self.eat26_combobox_q13, self.eat26_combobox_q14, self.eat26_combobox_q15,
+            self.eat26_combobox_q16, self.eat26_combobox_q17, self.eat26_combobox_q18,
+            self.eat26_combobox_q19, self.eat26_combobox_q20, self.eat26_combobox_q21,
+            self.eat26_combobox_q22, self.eat26_combobox_q23, self.eat26_combobox_q24,
+            self.eat26_combobox_q25, self.eat26_combobox_q26
+        )
+
+        for cb in self.eat26_combobox_list:
+            self.create_comboboxes_questions(cb)
+
+        self.eating_habits_submit_button = QPushButton("Submit")
+        self.eating_habits_submit_button.clicked.connect(lambda: (self.submit_eating_habits(), self.close()))
+
+        content_layout.addWidget(eat26_label_explanation)
+
+        for i in range(26):
+            content_layout.addWidget(eat26_label_list[i])
+            content_layout.addWidget(self.eat26_combobox_list[i])
+
+        content_layout.addWidget(self.eating_habits_submit_button)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(content_widget)
+
+        # Doesnt work needs fixing
+        # scroll.viewport().setStyleSheet("background-color: rgb(255, 255, 255);")
+
+        layout.addWidget(scroll)
+
         self.setLayout(layout)
+
+    def create_comboboxes_questions(self, combobox_input):
+        combobox_input.addItem("Never")
+        combobox_input.addItem("Rarely")
+        combobox_input.addItem("Sometimes")
+        combobox_input.addItem("Often")
+        combobox_input.addItem("Usually")
+        combobox_input.addItem("Always")
+
+    def submit_eating_habits(self):
+        try:
+            sql_conn = sqlite3.connect("healthapp.db")
+            sql_cursor = sql_conn.cursor()
+
+            date_now = datetime.now().date().isoformat()
+
+            eating_habits_value = eat26_scoring(self.eat26_combobox_list)
+
+            sql_cursor.execute(
+                "SELECT user_trackablesID "
+                "FROM user_trackables "
+                "WHERE trackableID = 8 AND userID = ?"
+                "ORDER BY trackableID ASC",
+                (self.user_ID,)
+            )
+
+            result = sql_cursor.fetchone()
+            if result is None:
+                print("No trackable found for this user.")
+                return
+
+            trackable_id = result[0]
+
+            sql_cursor.execute(
+                "INSERT INTO user_trackables_entries "
+                "(user_trackablesID, entry_date, value)"
+                "VALUES (?, ?, ?)",
+                (trackable_id, date_now, eating_habits_value)
+            )
+
+            sql_conn.commit()
+
+        except Exception as e:
+            print("Error submitting eating habits value:", e)
+
+        finally:
+            sql_conn.close()
+
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -884,15 +1223,15 @@ class MainWindow(QMainWindow):
         dialog.exec_()
 
     def create_tracking_alcohol_abuse_box(self):
-        dialog = TrackAlcoholAbuseWindow(self)
+        dialog = TrackAlcoholAbuseWindow(user_ID)
         dialog.exec_()
 
     def create_tracking_drug_abuse_box(self):
-        dialog = TrackDrugAbuseWindow(self)
+        dialog = TrackDrugAbuseWindow(user_ID)
         dialog.exec_()
 
     def create_tracking_eating_habits_box(self):
-        dialog = TrackEatingHabitsWindow(self)
+        dialog = TrackEatingHabitsWindow(user_ID)
         dialog.exec_()
 
     def resizeEvent(self, event):
