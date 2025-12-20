@@ -144,7 +144,7 @@ class TrackAnxietyWindow(QDialog):
         self.setWindowTitle("Anxiety Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 700
+        win_height = 600
         win_width = 600
         self.resize(win_width, win_height)
         self.center()
@@ -275,7 +275,7 @@ class TrackDepressionWindow(QDialog):
         self.setWindowTitle("Depression Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 800
+        win_height = 700
         win_width = 600
         self.resize(win_width, win_height)
         self.center()
@@ -524,7 +524,7 @@ class TrackSelfHarmWindow(QDialog):
         self.setWindowTitle("Self Harm Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 150
+        win_height = 100
         win_width = 300
         self.resize(win_width, win_height)
         self.center()
@@ -605,7 +605,7 @@ class TrackAlcoholAbuseWindow(QDialog):
         self.setWindowTitle("Alcohol Abuse Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 600
+        win_height = 300
         win_width = 300
         self.resize(win_width, win_height)
         self.center()
@@ -712,7 +712,7 @@ class TrackDrugAbuseWindow(QDialog):
         self.setWindowTitle("Drug Abuse Questionaire")
         self.setWindowIcon(QIcon("logo.ico"))
 
-        win_height = 800
+        win_height = 150
         win_width = 600
         self.resize(win_width, win_height)
         self.center()
@@ -1197,7 +1197,54 @@ class MainWindow(QMainWindow):
         scrolling_label.setStyleSheet("background: transparent; color: #a9b7c6; font-family: 'Arial'; font-size: 18px; font-weight: bold;")  # adjust color if needed
         toolbar.addWidget(scrolling_label)
 
+        # tiny, central widget
+        central_widget = QWidget()
+        central_widget.setFixedSize(1, 1)
+        self.setCentralWidget(central_widget)
+
+        self.setDockNestingEnabled(True)
+
+        # Keep track of docks per side
+        self.docks_left = []
+        self.docks_right = []
+
+        # Example docks
+        self.create_dock("Left Dock 1", [QLabel("Item 1")], side="left")
+        self.create_dock("Left Dock 2", [QLabel("Item 2")], side="left")
+
+        self.create_dock("Right Dock 1", [QPushButton("Btn 1")], side="right")
+        self.create_dock("Right Dock 2", [QPushButton("Btn 2")], side="right")
+
     # -------------------- Methods --------------------
+    def create_dock(self, title, widgets, side="left"):
+        """
+        Create a dock, add it to the left/right, and split evenly with existing docks.
+        """
+        dock = QDockWidget(title, self)
+        dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+
+        content_widget = QWidget()
+        layout = QVBoxLayout(content_widget)
+        for w in widgets:
+            layout.addWidget(w)
+        dock.setWidget(content_widget)
+
+        if side.lower() == "left":
+            self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+            # Split with the last dock on the left (if exists)
+            if self.docks_left:
+                self.splitDockWidget(self.docks_left[-1], dock, Qt.Vertical)
+            self.docks_left.append(dock)
+
+        elif side.lower() == "right":
+            self.addDockWidget(Qt.RightDockWidgetArea, dock)
+            if self.docks_right:
+                self.splitDockWidget(self.docks_right[-1], dock, Qt.Vertical)
+            self.docks_right.append(dock)
+
+        return dock
+
     def create_user_box(self):
         dialog = CreateUserWindow(self)
         dialog.exec_()
