@@ -1,7 +1,6 @@
 
 QMainWindow {
-	background: #ffffff;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(194, 194, 194, 1) 50%, rgba(147, 179, 181, 1) 100%);
+	background-color:#1e1d23;
 }
 QDialog {
 	background-color:#1e1d23;
@@ -382,4 +381,16 @@ QSlider::sub-page:horizontal {
 }
 QSlider::sub-page:vertical {
     background: #04b97f;
+}
+
+QDockWidget {
+    background-color: #1e1d23;
+    color: #a9b7c6;
+    padding: 8px;
+    border-radius: 20px
+    border: 2px solid #a9b7c6;
+}
+
+QDockWidget::title {
+    background-color: #808080;
 }

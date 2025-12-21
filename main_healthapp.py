@@ -12,7 +12,7 @@ with open("MaterialDark.qss", "r") as f:
     _style = f.read()
 
 # TEMPORARY userID until I have implemented a way to get the userID
-user_ID = 2
+# user_ID = 2
 
 class ScrollingLabel(QWidget):
     def __init__(self, text, parent=None):
@@ -901,12 +901,13 @@ class TrackEatingHabitsWindow(QDialog):
 
         content_layout.addWidget(self.eating_habits_submit_button)
 
+        content_widget.setAutoFillBackground(True)
+
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(content_widget)
 
-        # Doesnt work needs fixing
-        # scroll.viewport().setStyleSheet("background-color: rgb(255, 255, 255);")
+        scroll.viewport().setStyleSheet("background: transparent;")
 
         layout.addWidget(scroll)
 
@@ -938,9 +939,14 @@ class TrackEatingHabitsWindow(QDialog):
             )
 
             result = sql_cursor.fetchone()
+
             if result is None:
-                print("No trackable found for this user.")
-                return
+                # Show a warning message box
+                QMessageBox.warning(
+                    self,  # parent window
+                    "User is currently not tracking eating habits.",  # title
+                )
+                return  # keep the dialog open
 
             trackable_id = result[0]
 
@@ -968,6 +974,58 @@ class TrackEatingHabitsWindow(QDialog):
         y = screen_geometry.height() // 4
 
         self.move(x, y)
+
+class UserIDDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Enter User ID")
+        self.user_ID = None  # This will store the result
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel("Enter User E-Mail:"))
+        self.input_line = QLineEdit()
+        layout.addWidget(self.input_line)
+
+        ok_btn = QPushButton("Submit")
+        ok_btn.clicked.connect(self.submit)
+        layout.addWidget(ok_btn)
+
+        self.setLayout(layout)
+
+    def submit(self):
+        try:
+            sql_conn = sqlite3.connect("healthapp.db")
+            sql_cursor = sql_conn.cursor()
+
+            email_value = self.input_line.text().strip()
+
+            sql_cursor.execute(
+                "SELECT userID FROM users WHERE LOWER(email) = LOWER(?)",
+                (email_value,)
+            )
+
+            result = sql_cursor.fetchone()
+
+            if result is None:
+                # Show a warning message box
+                QMessageBox.warning(
+                    self,  # parent window
+                    "User Not Found",  # title
+                    f"No user found with email '{email_value}'"  # message
+                )
+                return  # keep the dialog open
+
+            user_result = result[0]
+
+            self.user_ID = user_result  # store input
+            self.accept()  # close dialog with QDialog.Accepted
+
+        except Exception as e:
+            print("Error retrieving userID:", e)
+
+        finally:
+            sql_conn.close()
 
  # ----------- User Dialog Windows -----------
 class CreateUserWindow(QDialog):
@@ -1015,17 +1073,17 @@ class CreateUserWindow(QDialog):
         layout.addWidget(QLabel("Age"), 4, 0)
         layout.addWidget(QLabel("E-Mail"), 5, 0)
 
-        fn_input = QLineEdit()
-        ln_input = QLineEdit()
-        gender_input = QLineEdit()
-        age_input = QLineEdit()
-        email_input = QLineEdit()
+        self.fn_input = QLineEdit()
+        self.ln_input = QLineEdit()
+        self.gender_input = QLineEdit()
+        self.age_input = QLineEdit()
+        self.email_input = QLineEdit()
 
-        layout.addWidget(fn_input, 1, 1)
-        layout.addWidget(ln_input, 2, 1)
-        layout.addWidget(gender_input, 3, 1)
-        layout.addWidget(age_input, 4, 1)
-        layout.addWidget(email_input, 5, 1)
+        layout.addWidget(self.fn_input, 1, 1)
+        layout.addWidget(self.ln_input, 2, 1)
+        layout.addWidget(self.gender_input, 3, 1)
+        layout.addWidget(self.age_input, 4, 1)
+        layout.addWidget(self.email_input, 5, 1)
 
         layout.addWidget(QLabel("Overall Mood"), 7, 0, alignment = Qt.AlignLeft)
         layout.addWidget(QLabel("Sleep"), 8, 0, alignment = Qt.AlignLeft)
@@ -1036,27 +1094,27 @@ class CreateUserWindow(QDialog):
         layout.addWidget(QLabel("Drug Abuse"), 13, 0, alignment = Qt.AlignLeft)
         layout.addWidget(QLabel("Eating Habits"), 14, 0, alignment = Qt.AlignLeft)
 
-        check_input_mood = QCheckBox()
-        check_input_sleep = QCheckBox()
-        check_input_anxiety = QCheckBox()
-        check_input_depression = QCheckBox()
-        check_input_self_harm = QCheckBox()
-        check_input_alcohol = QCheckBox()
-        check_input_drugs = QCheckBox()
-        check_input_eating = QCheckBox()
+        self.check_input_mood = QCheckBox()
+        self.check_input_sleep = QCheckBox()
+        self.check_input_anxiety = QCheckBox()
+        self.check_input_depression = QCheckBox()
+        self.check_input_self_harm = QCheckBox()
+        self.check_input_alcohol = QCheckBox()
+        self.check_input_drugs = QCheckBox()
+        self.check_input_eating = QCheckBox()
 
-        layout.addWidget(check_input_mood, 7, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_sleep, 8, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_anxiety, 9, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_depression, 10, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_self_harm, 11, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_alcohol, 12, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_drugs, 13, 1, alignment = Qt.AlignRight)
-        layout.addWidget(check_input_eating, 14, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_mood, 7, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_sleep, 8, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_anxiety, 9, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_depression, 10, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_self_harm, 11, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_alcohol, 12, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_drugs, 13, 1, alignment = Qt.AlignRight)
+        layout.addWidget(self.check_input_eating, 14, 1, alignment = Qt.AlignRight)
 
             # Creating send button and setting style
         create_user_button = QPushButton("Create User")
-        create_user_button.clicked.connect(lambda: self.on_create_clicked(fn_input, ln_input, gender_input, age_input, email_input, check_input_mood, check_input_sleep, check_input_anxiety, check_input_depression, check_input_self_harm, check_input_alcohol, check_input_drugs, check_input_eating))
+        create_user_button.clicked.connect(self.on_create_clicked)
 
         create_user_button.setStyleSheet("""
             	border-style: solid;
@@ -1071,8 +1129,6 @@ class CreateUserWindow(QDialog):
 
         layout.addWidget(create_user_button, 16, 1, alignment = Qt.AlignRight)
 
-        widget = QWidget()
-        widget.setLayout(layout)
         self.setLayout(layout)
 
         # Defining functions necesarry for window
@@ -1086,55 +1142,65 @@ class CreateUserWindow(QDialog):
         self.move(x, y)
 
         # Function for creating user and setting trackables
-    def on_create_clicked(self, fn_input, ln_input, gender_input, age_input, email_input, check_input_mood, check_input_sleep, check_input_anxiety, check_input_depression, check_input_self_harm, check_input_alcohol, check_input_drugs, check_input_eating):
-        fn_input_text = fn_input.text()
-        ln_input_text = ln_input.text()
-        gender_input_text = gender_input.text()
+    def on_create_clicked(self):
+        fn_input_text = self.fn_input.text()
+        ln_input_text = self.ln_input.text()
+        gender_input_text = self.gender_input.text()
         try:
-            age_input_text = int(age_input.text())
+            age_input_text = int(self.age_input.text())
         except:
             QMessageBox.warning(self, "Input Error", "Age must be a number.")
             return
-        email_input_text = email_input.text()
-        health_func.insert_user(fn_input_text, ln_input_text, gender_input_text, age_input_text, email_input_text)
+        email_input_text = self.email_input.text()
+
+        try:
+            insert_user(fn_input_text, ln_input_text, gender_input_text, age_input_text, email_input_text)
+        except Exception as e:
+            QMessageBox.critical(self, "DB Error", f"Failed to insert user: {e}")
+            return
 
         sql_conn = sqlite3.connect("healthapp.db")
         sql_cursor = sql_conn.cursor()
         sql_cursor.execute("SELECT userID FROM users WHERE email = ?", (email_input_text,))
-        userID = sql_cursor.fetchone()[0]
+        result = sql_cursor.fetchone()
         sql_conn.close()
+        if result is None:
+            QMessageBox.warning(self, "Error", "User was not created correctly.")
+            return
+        userID = result[0]
 
-        clicked_mood = check_input_mood.isChecked()
-        clicked_sleep = check_input_sleep.isChecked()
-        clicked_anxiety = check_input_anxiety.isChecked()
-        clicked_depression = check_input_depression.isChecked()
-        clicked_self_harm = check_input_self_harm.isChecked()
-        clicked_alcohol = check_input_alcohol.isChecked()
-        clicked_drugs = check_input_drugs.isChecked()
-        clicked_eating = check_input_eating.isChecked()
+        # Checkboxes
+        try:
+            if self.check_input_mood.isChecked():
+                track_mood(userID)
+            if self.check_input_sleep.isChecked():
+                track_sleep(userID)
+            if self.check_input_anxiety.isChecked():
+                track_anxiety(userID)
+            if self.check_input_depression.isChecked():
+                track_depression(userID)
+            if self.check_input_self_harm.isChecked():
+                track_self_harm(userID)
+            if self.check_input_alcohol.isChecked():
+                track_alcohol_abuse(userID)
+            if self.check_input_drugs.isChecked():
+                track_drug_abuse(userID)
+            if self.check_input_eating.isChecked():
+                track_eating_habits(userID)
+        except Exception as e:
+            QMessageBox.critical(self, "Tracking Error", f"Failed to track items: {e}")
+            return
 
-        if clicked_mood:
-            health_func.track_mood(userID)
-        if clicked_sleep:
-            health_func.track_sleep(userID)
-        if clicked_anxiety:
-            health_func.track_anxiety(userID)
-        if clicked_depression:
-            health_func.track_depression(userID)
-        if clicked_self_harm:
-            health_func.track_self_harm(userID)
-        if clicked_alcohol:
-            health_func.track_alcohol_abuse(userID)
-        if clicked_drugs:
-            health_func.track_drug_abuse(userID)
-        if clicked_eating:
-            health_func.track_eating_habits(userID)
+        QMessageBox.information(self, "Success", f"User '{fn_input_text} {ln_input_text}' created successfully!")
 
+        self.accept()
 
 #   ----------- Main Window -----------
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+
+        self.user_ID = None
 
         # Set Application Defaults
         self.setWindowTitle("HealthApp")
@@ -1155,6 +1221,7 @@ class MainWindow(QMainWindow):
         create_user_action = user_menu.addAction("Create User")
         create_user_action.triggered.connect(self.create_user_box)
         change_user_action = user_menu.addAction("Change User")
+        change_user_action.triggered.connect(self.open_user_dialog)
         modify_user_action = user_menu.addAction("Modify User")
         delete_user_action = user_menu.addAction("Delete User")
 
@@ -1188,7 +1255,7 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
         toolbar.setFloatable(False)
         toolbar.setAllowedAreas(Qt.TopToolBarArea)
-        toolbar.setStyleSheet("background-color: rgb(0, 0, 0);")
+        toolbar.setStyleSheet("background-color: #1e1d23")
         self.addToolBar(Qt.TopToolBarArea, toolbar)
 
         # Create the scrolling label
@@ -1196,6 +1263,9 @@ class MainWindow(QMainWindow):
         scrolling_label.setFixedHeight(30)
         scrolling_label.setStyleSheet("background: transparent; color: #a9b7c6; font-family: 'Arial'; font-size: 18px; font-weight: bold;")  # adjust color if needed
         toolbar.addWidget(scrolling_label)
+
+        self.status = self.statusBar()
+        self.update_status()
 
         # tiny, central widget
         central_widget = QWidget()
@@ -1216,6 +1286,15 @@ class MainWindow(QMainWindow):
         self.create_dock("Right Dock 2", [QPushButton("Btn 2")], side="right")
 
     # -------------------- Methods --------------------
+    def update_status(self):
+        self.status.showMessage(f"Current User ID: {self.user_ID}")
+
+    def open_user_dialog(self):
+        dialog = UserIDDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            self.user_ID = dialog.user_ID  # update main window variable
+            self.update_status()
+
     def create_dock(self, title, widgets, side="left"):
         """
         Create a dock, add it to the left/right, and split evenly with existing docks.
@@ -1250,35 +1329,35 @@ class MainWindow(QMainWindow):
         dialog.exec_()
 
     def create_tracking_mood_box(self):
-        dialog = TrackMoodWindow(user_ID)
+        dialog = TrackMoodWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_anxiety_box(self):
-        dialog = TrackAnxietyWindow(user_ID)
+        dialog = TrackAnxietyWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_depression_box(self):
-        dialog = TrackDepressionWindow(user_ID)
+        dialog = TrackDepressionWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_sleep_box(self):
-        dialog = TrackSleepWindow(user_ID)
+        dialog = TrackSleepWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_self_harm_box(self):
-        dialog = TrackSelfHarmWindow(user_ID)
+        dialog = TrackSelfHarmWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_alcohol_abuse_box(self):
-        dialog = TrackAlcoholAbuseWindow(user_ID)
+        dialog = TrackAlcoholAbuseWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_drug_abuse_box(self):
-        dialog = TrackDrugAbuseWindow(user_ID)
+        dialog = TrackDrugAbuseWindow(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_eating_habits_box(self):
-        dialog = TrackEatingHabitsWindow(user_ID)
+        dialog = TrackEatingHabitsWindow(self.user_ID, self)
         dialog.exec_()
 
     def resizeEvent(self, event):
