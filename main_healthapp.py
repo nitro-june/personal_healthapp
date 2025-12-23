@@ -1141,7 +1141,7 @@ class CreateUserWindow(QDialog):
 
         self.move(x, y)
 
-        # Function for creating user and setting trackables
+    # Function for creating user and setting trackables
     def on_create_clicked(self):
         fn_input_text = self.fn_input.text()
         ln_input_text = self.ln_input.text()
