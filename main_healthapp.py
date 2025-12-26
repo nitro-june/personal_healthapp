@@ -1,9 +1,18 @@
+import sys
+import matplotlib
+matplotlib.use('Qt5Agg')
+
 import PyQt5 as PyQt
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-import sys
 import sqlite3
+
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg,
+    NavigationToolbar2QT as NavigationToolbar
+)
+from matplotlib.figure import Figure
 
 from refactor.functions_healthapp import *
 from refactor.functions_tests import *
@@ -1027,7 +1036,34 @@ class UserIDDialog(QDialog):
         finally:
             sql_conn.close()
 
- # ----------- User Dialog Windows -----------
+# ----------- Matplotlib Figure Widget for Helper Dock -----------
+class MatplotlibWidget(QWidget):
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        super().__init__(parent)
+
+        # Create the Matplotlib Figure and Canvas
+        self.figure = Figure(figsize=(width, height), dpi=dpi)
+        self.canvas = FigureCanvasQTAgg(self.figure)
+        self.axes = self.figure.add_subplot(111)  # single subplot
+
+        # Create the navigation toolbar
+        self.toolbar = NavigationToolbar(self.canvas, self)
+
+        # Layout
+        layout = QVBoxLayout()
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.canvas)
+        self.setLayout(layout)
+
+    def plot(self, x, y, **kwargs):
+        self.axes.plot(x, y, **kwargs)
+        self.canvas.draw()  # Refresh the canvas
+
+    def clear(self):
+        self.axes.cla()
+        self.canvas.draw()
+
+# ----------- User Dialog Windows -----------
 class CreateUserWindow(QDialog):
     def __init__(self, parent=None):
             # Initialize window + information
@@ -1267,23 +1303,32 @@ class MainWindow(QMainWindow):
         self.status = self.statusBar()
         self.update_status()
 
-        # tiny, central widget
+        # --------- For Docking Widgets ----------
         central_widget = QWidget()
         central_widget.setFixedSize(1, 1)
         self.setCentralWidget(central_widget)
 
         self.setDockNestingEnabled(True)
 
+        plot_widget1 = MatplotlibWidget()
+        plot_widget1.plot([0,1,2,3,4], [10,1,20,3,40], color='blue', marker='o')
+        plot_widget2 = MatplotlibWidget()
+        plot_widget2.plot([0,1,2,3,4], [1,4,30,35,10], color='blue', marker='o')
+        plot_widget3 = MatplotlibWidget()
+        plot_widget3.plot([0,1,2,3,4], [10,1,20,3,40], color='blue', marker='o')
+        plot_widget4 = MatplotlibWidget()
+        plot_widget4.plot([0,1,2,3,4], [10,1,20,3,40], color='blue', marker='o')
+
         # Keep track of docks per side
         self.docks_left = []
         self.docks_right = []
 
         # Example docks
-        self.create_dock("Left Dock 1", [QLabel("Item 1")], side="left")
-        self.create_dock("Left Dock 2", [QLabel("Item 2")], side="left")
+        self.create_dock("Plot1", widgets=[plot_widget1], side="left")
+        self.create_dock("Plot2", widgets=[plot_widget2], side="left")
 
-        self.create_dock("Right Dock 1", [QPushButton("Btn 1")], side="right")
-        self.create_dock("Right Dock 2", [QPushButton("Btn 2")], side="right")
+        self.create_dock("Plot3", widgets=[plot_widget3], side="right")
+        self.create_dock("Plot4", widgets=[plot_widget4], side="right")
 
     # -------------------- Methods --------------------
     def update_status(self):

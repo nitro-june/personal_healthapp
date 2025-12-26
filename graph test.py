@@ -1,13 +1,44 @@
-import matplotlib.pyplot as plt
-import numpy as np
+import sys
+import matplotlib
+matplotlib.use('Qt5Agg')
 
-x = list(range(0, 100))
-y = list(range(0, 100))
-labels = ["a", "b", "c", "d", "e"]
-labels2 = labels * 20
+from PyQt5 import QtCore, QtGui, QtWidgets
 
-fig, ax = plt.subplots()             # Create a figure containing a single Axes.
-ax.plot(x, y)  # Plot some data on the Axes.
-ax.tick_params(axis='x', labelrotation=45)
-ax.set_xticks(x, labels2, rotation="vertical")
-plt.show()
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+
+
+class MplCanvas(FigureCanvasQTAgg):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        super().__init__(fig)
+
+
+class MainWindow(QtWidgets.QMainWindow):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        sc = MplCanvas(self, width=5, height=4, dpi=100)
+        sc.axes.plot([0,1,2,3,4], [10,1,20,3,40])
+
+        # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
+        toolbar = NavigationToolbar(sc, self)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(toolbar)
+        layout.addWidget(sc)
+
+        # Create a placeholder widget to hold our toolbar and canvas.
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
+
+        self.show()
+
+
+app = QtWidgets.QApplication(sys.argv)
+w = MainWindow()
+app.exec_()
