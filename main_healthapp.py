@@ -20,9 +20,6 @@ from refactor.functions_tests import *
 with open("MaterialDark.qss", "r") as f:
     _style = f.read()
 
-# TEMPORARY userID until I have implemented a way to get the userID
-# user_ID = 2
-
 class ScrollingLabel(QWidget):
     def __init__(self, text, parent=None):
         super().__init__(parent)
@@ -984,59 +981,7 @@ class TrackEatingHabitsWindow(QDialog):
 
         self.move(x, y)
 
-class UserIDDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Enter User ID")
-        self.user_ID = None  # This will store the result
-
-        layout = QVBoxLayout()
-
-        layout.addWidget(QLabel("Enter User E-Mail:"))
-        self.input_line = QLineEdit()
-        layout.addWidget(self.input_line)
-
-        ok_btn = QPushButton("Submit")
-        ok_btn.clicked.connect(self.submit)
-        layout.addWidget(ok_btn)
-
-        self.setLayout(layout)
-
-    def submit(self):
-        try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
-            email_value = self.input_line.text().strip()
-
-            sql_cursor.execute(
-                "SELECT userID FROM users WHERE LOWER(email) = LOWER(?)",
-                (email_value,)
-            )
-
-            result = sql_cursor.fetchone()
-
-            if result is None:
-                # Show a warning message box
-                QMessageBox.warning(
-                    self,  # parent window
-                    "User Not Found",  # title
-                    f"No user found with email '{email_value}'"  # message
-                )
-                return  # keep the dialog open
-
-            user_result = result[0]
-
-            self.user_ID = user_result  # store input
-            self.accept()  # close dialog with QDialog.Accepted
-
-        except Exception as e:
-            print("Error retrieving userID:", e)
-
-        finally:
-            sql_conn.close()
-
-# ----------- Matplotlib Figure Widget for Helper Dock -----------
+# ----------- Widgets for Helper Method create_dock -----------
 class MatplotlibWidget(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         super().__init__(parent)
@@ -1055,6 +1000,10 @@ class MatplotlibWidget(QWidget):
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
+    def set_yaxis(self, yaxis):
+        self.axes.set_ylim(0, yaxis)
+        self.axes.set_yticks(range(0, yaxis + 1))
+
     def plot(self, x, y, **kwargs):
         self.axes.plot(x, y, **kwargs)
         self.canvas.draw()  # Refresh the canvas
@@ -1062,6 +1011,27 @@ class MatplotlibWidget(QWidget):
     def clear(self):
         self.axes.cla()
         self.canvas.draw()
+
+class UserInfoTest(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QGridLayout(self)
+        user_info = QLabel("User Information")
+        user_info.setFont(QFont("Arial", 14))
+        layout.addWidget(user_info, 0, 0)
+        layout.addWidget(QLabel("Name:"), 1, 1)
+        layout.addWidget(QLabel("Test Name"), 1, 2)
+        layout.addWidget(QLabel("Age:"), 2, 1)
+        layout.addWidget(QLabel("Test Age"), 2, 2)
+        layout.addWidget(QLabel("Gender:"), 3, 1)
+        layout.addWidget(QLabel("Test Gender"), 3, 2)
+        layout.addWidget(QLabel("E-Mail:"), 4, 1)
+        layout.addWidget(QLabel("Test E-Mail"), 4, 2)
+        layout.addWidget(QLabel("Created on:"), 5, 1)
+        layout.addWidget(QLabel("Test Date"), 5, 2)
+        layout.addWidget(QLabel("Last login:"), 6, 1)
+        layout.addWidget(QLabel("Test Date"), 6, 2)
+
 
 # ----------- User Dialog Windows -----------
 class CreateUserWindow(QDialog):
@@ -1231,6 +1201,58 @@ class CreateUserWindow(QDialog):
 
         self.accept()
 
+class UserIDDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Enter User ID")
+        self.user_ID = None  # This will store the result
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel("Enter User E-Mail:"))
+        self.input_line = QLineEdit()
+        layout.addWidget(self.input_line)
+
+        ok_btn = QPushButton("Submit")
+        ok_btn.clicked.connect(self.submit)
+        layout.addWidget(ok_btn)
+
+        self.setLayout(layout)
+
+    def submit(self):
+        try:
+            sql_conn = sqlite3.connect("healthapp.db")
+            sql_cursor = sql_conn.cursor()
+
+            email_value = self.input_line.text().strip()
+
+            sql_cursor.execute(
+                "SELECT userID FROM users WHERE LOWER(email) = LOWER(?)",
+                (email_value,)
+            )
+
+            result = sql_cursor.fetchone()
+
+            if result is None:
+                # Show a warning message box
+                QMessageBox.warning(
+                    self,  # parent window
+                    "User Not Found",  # title
+                    f"No user found with email '{email_value}'"  # message
+                )
+                return  # keep the dialog open
+
+            user_result = result[0]
+
+            self.user_ID = user_result  # store input
+            self.accept()  # close dialog with QDialog.Accepted
+
+        except Exception as e:
+            print("Error retrieving userID:", e)
+
+        finally:
+            sql_conn.close()
+
 #   ----------- Main Window -----------
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -1245,7 +1267,7 @@ class MainWindow(QMainWindow):
         # Window Sizes in 16:9
         self.setMinimumSize(QSize(854, 480))
         self.setMaximumSize(QSize(1920, 1080))
-        self.resize(1280, 720)
+        self.resize(1600, 900)
 
         self.setStyleSheet(_style)
 
@@ -1295,7 +1317,7 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.TopToolBarArea, toolbar)
 
         # Create the scrolling label
-        scrolling_label = ScrollingLabel(give_message())
+        scrolling_label = ScrollingLabel(give_message() + "                 " + give_message())
         scrolling_label.setFixedHeight(30)
         scrolling_label.setStyleSheet("background: transparent; color: #a9b7c6; font-family: 'Arial'; font-size: 18px; font-weight: bold;")  # adjust color if needed
         toolbar.addWidget(scrolling_label)
@@ -1310,27 +1332,164 @@ class MainWindow(QMainWindow):
 
         self.setDockNestingEnabled(True)
 
-        plot_widget1 = MatplotlibWidget()
-        plot_widget1.plot([0,1,2,3,4], [10,1,20,3,40], color='blue', marker='o')
-        plot_widget2 = MatplotlibWidget()
-        plot_widget2.plot([0,1,2,3,4], [1,4,30,35,10], color='blue', marker='o')
-        plot_widget3 = MatplotlibWidget()
-        plot_widget3.plot([0,1,2,3,4], [10,1,20,3,40], color='blue', marker='o')
-        plot_widget4 = MatplotlibWidget()
-        plot_widget4.plot([0,1,2,3,4], [10,1,20,3,40], color='blue', marker='o')
+        #-------------------
 
-        # Keep track of docks per side
         self.docks_left = []
         self.docks_right = []
-
-        # Example docks
-        self.create_dock("Plot1", widgets=[plot_widget1], side="left")
-        self.create_dock("Plot2", widgets=[plot_widget2], side="left")
-
-        self.create_dock("Plot3", widgets=[plot_widget3], side="right")
-        self.create_dock("Plot4", widgets=[plot_widget4], side="right")
+        self.docks_initialized = False
 
     # -------------------- Methods --------------------
+    def update_dockables(self):
+        # 1. Remove existing docks
+        for dock in self.docks_left + self.docks_right:
+            if dock is not None:  # Only delete if it exists
+                self.removeDockWidget(dock)
+                dock.deleteLater()
+
+        self.docks_left.clear()
+        self.docks_right.clear()
+
+        test_user_info = UserInfoTest()
+        self.create_dock("User Information", [test_user_info], side="right")
+
+        trackables_me = get_user_trackables(self.user_ID)
+
+        for item in trackables_me:
+            if item[1] == 1:
+                anxiety_value = []
+                anxiety_date = []
+                values_anxiety = get_values(item[0])
+                for item2 in values_anxiety:
+                    anxiety_date.append(item2[0])
+                    anxiety_value.append(item2[1])
+
+                plot_anxiety = MatplotlibWidget()
+                plot_anxiety.set_yaxis(21)
+                plot_anxiety.plot(anxiety_date, anxiety_value)
+
+                self.create_dock("Anxiety Data", [plot_anxiety], side="left")
+
+            if item[1] == 2:
+                mood_value = []
+                mood_date = []
+                values_mood = get_values(item[0])
+                for item2 in values_mood:
+                    mood_date.append(item2[0])
+                    mood_value.append(item2[1])
+
+                plot_mood = MatplotlibWidget()
+                plot_mood.set_yaxis(10)
+                plot_mood.plot(mood_date, mood_value)
+
+                self.create_dock("Mood Data", [plot_mood], side="left")
+
+            if item[1] == 3:
+                sleep_q_value = []
+                sleep_q_date = []
+                values_sleep_q = get_values(item[0])
+
+                for item2 in values_sleep_q:
+                    sleep_q_date.append(item2[0])
+                    sleep_q_value.append(item2[1])
+
+                plot_sleep_q = MatplotlibWidget()
+                plot_sleep_q.set_yaxis(10)
+                plot_sleep_q.plot(sleep_q_date, sleep_q_value)
+                #self.create_dock("Sleep Data", [plot_sleep], side="left")
+
+            if item[1] == 4:
+                sleep_l_value = []
+                sleep_l_date = []
+                values_sleep_l = get_values(item[0])
+
+                for item2 in values_sleep_l:
+                    sleep_l_date.append(item2[0])
+                    sleep_l_value.append(item2[1])
+
+                plot_sleep_q.plot(sleep_l_date, sleep_l_value)
+
+                self.create_dock("Sleep Data", [plot_sleep_q], side="right")
+
+            if item[1] == 5:
+                self_harm_value = []
+                self_harm_date = []
+                values_self_harm = get_values(item[0])
+
+                for item2 in values_self_harm:
+                    self_harm_date.append(item2[0])
+                    self_harm_value.append(item2[1])
+
+                plot_self_harm = QLabel("TEST")
+
+                self.create_dock("Self Harm Data", [plot_self_harm], side="right")
+
+            if item[1] == 6:
+                alcohol_abuse_value = []
+                alcohol_abuse_date = []
+                values_alcohol_abuse = get_values(item[0])
+
+                for item2 in values_alcohol_abuse:
+                    alcohol_abuse_date.append(item2[0])
+                    alcohol_abuse_value.append(item2[1])
+
+                plot_alcohol_abuse = MatplotlibWidget()
+                plot_alcohol_abuse.set_yaxis(12)
+                plot_alcohol_abuse.plot(alcohol_abuse_date, alcohol_abuse_value)
+
+                self.create_dock("Alcohol Abuse Data", [plot_alcohol_abuse], side="left")
+
+            if item[1] == 7:
+                drug_abuse_value = []
+                drug_abuse_date = []
+                values_drug_abuse = get_values(item[0])
+
+                for item2 in values_self_harm:
+                    drug_abuse_date.append(item2[0])
+                    drug_abuse_value.append(item2[1])
+
+                plot_drug_abuse = QLabel("TEST")
+
+                self.create_dock("Drug Abuse Data", [plot_drug_abuse], side="right")
+
+            if item[1] == 8:
+                eating_habits_value = []
+                eating_habits_date = []
+                values_eating_habits = get_values(item[0])
+
+                for item2 in values_eating_habits:
+                    eating_habits_date.append(item2[0])
+                    eating_habits_value.append(item2[1])
+
+                plot_eating_habits = MatplotlibWidget()
+                plot_eating_habits.set_yaxis(78)
+                plot_eating_habits.plot(eating_habits_date, eating_habits_value)
+
+                self.create_dock("Eating Habits Data", [plot_eating_habits], side="left")
+
+            if item[1] == 9:
+                depression_value = []
+                depression_date = []
+                values_depression = get_values(item[0])
+
+                for item2 in values_depression:
+                    depression_date.append(item2[0])
+                    depression_value.append(item2[1])
+
+                plot_depression = MatplotlibWidget()
+                plot_depression.set_yaxis(27)
+                plot_depression.plot(depression_date, depression_value)
+
+                self.create_dock("Depression Data", [plot_depression], side="left")
+
+        # 2. Load user-specific data (example)
+        # dates_mood, values_mood = self.load_user_data()
+
+        # 3. Create new plot widgets
+        #plot_widget1 = MatplotlibWidget()
+        #plot_widget1.plot(dates_mood, values_mood)
+
+        self.docks_initialized = True
+
     def update_status(self):
         self.status.showMessage(f"Current User ID: {self.user_ID}")
 
@@ -1339,6 +1498,7 @@ class MainWindow(QMainWindow):
         if dialog.exec_() == QDialog.Accepted:
             self.user_ID = dialog.user_ID  # update main window variable
             self.update_status()
+            self.update_dockables()
 
     def create_dock(self, title, widgets, side="left"):
         """

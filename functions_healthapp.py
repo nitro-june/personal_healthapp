@@ -174,3 +174,39 @@ def give_message():
 
     return message_list[randint(0, len(message_list) - 1)]
 
+def get_user_trackables(userID):
+    conn = None
+    user_trackables = []
+    try:
+        conn = sqlite3.connect("healthapp.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT user_trackablesID, trackableID from user_trackables WHERE userID = ? ORDER BY trackableID ASC", (userID, ))
+        user_trackables = cursor.fetchall()
+
+    except Exception as e:
+        print("Error in selecting user trackables:", e)
+
+    finally:
+        if conn:
+            conn.close()
+    return user_trackables
+
+def get_values(user_trackableID):
+    values = []
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT entry_date, value "
+                "FROM user_trackables_entries "
+                "WHERE user_trackablesID = ? "
+                "ORDER BY entry_date ASC",
+                (user_trackableID,)
+            )
+            values = cursor.fetchall()
+    except sqlite3.Error as e:
+        print(f"Database error for user_trackableID {user_trackableID}: {e}")
+    except Exception as e:
+        print(f"Unexpected error for user_trackableID {user_trackableID}: {e}")
+    return values

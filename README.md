@@ -50,13 +50,25 @@ The questionaire for **"drug abuse"** is based on **TICS** *(Two-Item Conjoint S
 
 The questionaire for **eating habits** is based on **EAT-26**, which is the most widely used standardized self-report test for the measure of symptoms and concerns regarding eating disorders.
 
-**[The National HIV Curriculum](https://www.hiv.uw.edu/)** led by the University of Washington has great resources, which I used as a source to implement some of the quetionaires and scales.
+### Miscellaneous
+
+- A scrolling text of a randomly chosen sentance, which are kind and positive.
+- Possibility for multiple users -> *currently it is a local application with a stand-alone-database, so there's no reason for multiple users* - theoretically changing the application to use a file-share-database should be possible
+-
 
 ---
 
 ## Basic Usage
 
+### Create a User
 
+### Select a User
+
+### Track your Data
+
+### Displaying your Data
+
+### Creating a PDF from your Data
 
 ---
 
@@ -68,7 +80,7 @@ The questionaire for **eating habits** is based on **EAT-26**, which is the most
 
 ### Crisis Support
 
-If you or your loved ones are in need of support, there are many available resources:
+**If you or your loved ones are in need of support, there are many available resources:**
 
 #### Germany
 
@@ -91,3 +103,6 @@ If you or your loved ones are in need of support, there are many available resou
 
 ### Useful Resources
 
+- **[The Trevor Project](https://www.thetrevorproject.org/)**  - crisis support, education and research for young LGTBQ+ identifying people
+- **[The National HIV Curriculum](https://www.hiv.uw.edu/)** led by the University of Washington has great resources, which I used as a source to implement some of the quetionaires and scales.
+- **[Schwulenberatung Berlin](https://schwulenberatungberlin.de/)** - a non-profit organization that helps queer people in Berlin.
