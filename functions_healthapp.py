@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime
 from random import randint
 
+# --------- User creatiom ---------
 def insert_user(user_fn, user_ln, user_gender, user_age, user_email):
     sql_conn = sqlite3.connect("healthapp.db")
     sql_cursor = sql_conn.cursor()
@@ -14,17 +15,7 @@ def insert_user(user_fn, user_ln, user_gender, user_age, user_email):
     sql_conn.commit()
     sql_conn.close()
 
-def update_last_login(user_email):
-    sql_conn =  sqlite3.connect("healthapp.db")
-    sql_cursor = sql_conn.cursor()
-    date_now = str(datetime.now())
-    sql_cursor.execute(
-        "UPDATE users SET last_login = (?) WHERE email = (?)",
-        (date_now[0:10], user_email)
-    )
-    sql_conn.commit()
-    sql_conn.close()
-
+# --------- Database entries for trackables selected ---------
 def track_mood(userID):
     conn = None
     try:
@@ -166,6 +157,7 @@ def track_eating_habits(userID):
         if conn:
             conn.close()
 
+# Selects a random message from a text file
 def give_message():
     with open("messages.txt", "r") as file:
         message_list = file.readlines()
@@ -174,6 +166,7 @@ def give_message():
 
     return message_list[randint(0, len(message_list) - 1)]
 
+# Gets the user trackables and the values of these trackables
 def get_user_trackables(userID):
     conn = None
     user_trackables = []
@@ -210,3 +203,34 @@ def get_values(user_trackableID):
     except Exception as e:
         print(f"Unexpected error for user_trackableID {user_trackableID}: {e}")
     return values
+
+# Updates user login date
+def update_login(userID):
+    conn = sqlite3.connect("healthapp.db")
+    cursor = conn.cursor()
+
+    date_now = str(datetime.now())[:10]
+    cursor.execute(
+        "UPDATE users SET last_login = ? WHERE userID = ?",
+        (date_now, userID)
+    )
+
+    conn.commit()
+    conn.close()
+
+# Simple SQLite command to get user row
+def get_user_info(userID):
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT first_name, last_name, gender, age, created_at, last_login, email 
+                FROM users 
+                WHERE userID = ?
+            """, (userID,))
+            user_info = cursor.fetchone()
+            return user_info
+
+    except sqlite3.Error as e:
+        print("Error selecting user information:", e)
+        return None

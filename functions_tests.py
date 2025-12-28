@@ -1,12 +1,10 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from jupyter_lsp.specs import sql
-from datetime import datetime
 
-# Logic for combobox PYQT
+# --------- Logic for calculation of scores ---------
 
-    # GAD7 scoring - Anxiety
+# GAD7 scoring - Anxiety
 def gad7_scoring(comboboxes):
     q1 = comboboxes[0].currentIndex()
     q2 = comboboxes[1].currentIndex()
@@ -19,7 +17,7 @@ def gad7_scoring(comboboxes):
     total_score = q1 + q2 + q3 + q4 + q5 + q6 + q7
     return total_score
 
-    # PHQ9 scoring - Depression
+# PHQ9 scoring - Depression
 def phq9_scoring(comboboxes):
     q1 = comboboxes[0].currentIndex()
     q2 = comboboxes[1].currentIndex()
@@ -42,7 +40,7 @@ def phq9_q9(q9):
     else:
         return False
 
-    # AUDIT-C scoring - Alcohol abuse
+# AUDIT-C scoring - Alcohol abuse
 def auditc_scoring(combobox_input):
     q1 = combobox_input[0].currentIndex()
     q2 = combobox_input[1].currentIndex()
@@ -51,7 +49,7 @@ def auditc_scoring(combobox_input):
     total_score = q1 + q2 + q3
     return total_score
 
-    # Eat26 scoring - Eating habits
+# Eat26 scoring - Eating habits
 def eat26_calculate_values(combobox_input):
     q = combobox_input.currentIndex()
     if q == 3:

@@ -24,6 +24,7 @@ class ScrollingLabel(QWidget):
     def __init__(self, text, parent=None):
         super().__init__(parent)
 
+        # Setup for widget
         self.setMinimumHeight(40)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -36,17 +37,18 @@ class ScrollingLabel(QWidget):
         font.setBold(True)
         self.label.setFont(font)
 
-        # Animation
+        # Animation settings
         self.animation = QPropertyAnimation(self.label, b"pos")
         self.animation.setDuration(13000)
         self.animation.setLoopCount(-1)
 
     def showEvent(self, event):
         super().showEvent(event)
-        self.start_animation()  # now widget has proper width
+        self.start_animation()
 
+    # Animation is started using the label
     def start_animation(self):
-        self.label.adjustSize()  # ensures width is correct
+        self.label.adjustSize()
         container_width = self.width()
         start_pos = QPoint(container_width, 0)
         end_pos = QPoint(-self.label.width(), 0)
@@ -62,6 +64,11 @@ class ScrollingLabel(QWidget):
         self.start_animation()
 
 # ---------- Action Windows for Tracking -----------
+
+# All of these widgets follow the same pattern
+# Class/Widget setup
+# Add content of the class
+# Defining a method that executes SQLite commands
 class TrackMoodWindow(QDialog):
     def __init__(self, user_ID, parent=None):
         super().__init__(parent)
@@ -1000,9 +1007,9 @@ class MatplotlibWidget(QWidget):
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
-    def set_yaxis(self, yaxis):
+    def set_yaxis(self, yaxis, step=1):
         self.axes.set_ylim(0, yaxis)
-        self.axes.set_yticks(range(0, yaxis + 1))
+        self.axes.set_yticks(range(0, yaxis + 1, step))
 
     def plot(self, x, y, **kwargs):
         self.axes.plot(x, y, **kwargs)
@@ -1013,31 +1020,52 @@ class MatplotlibWidget(QWidget):
         self.canvas.draw()
 
 class UserInfoTest(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, user_ID, parent=None):
         super().__init__(parent)
+
+        # Setup class widget
+        self.user_ID = user_ID
+
         layout = QGridLayout(self)
+        self.setLayout(layout)
+
+        # Add content
         user_info = QLabel("User Information")
         user_info.setFont(QFont("Arial", 14))
-        layout.addWidget(user_info, 0, 0)
-        layout.addWidget(QLabel("Name:"), 1, 1)
-        layout.addWidget(QLabel("Test Name"), 1, 2)
-        layout.addWidget(QLabel("Age:"), 2, 1)
-        layout.addWidget(QLabel("Test Age"), 2, 2)
-        layout.addWidget(QLabel("Gender:"), 3, 1)
-        layout.addWidget(QLabel("Test Gender"), 3, 2)
-        layout.addWidget(QLabel("E-Mail:"), 4, 1)
-        layout.addWidget(QLabel("Test E-Mail"), 4, 2)
-        layout.addWidget(QLabel("Created on:"), 5, 1)
-        layout.addWidget(QLabel("Test Date"), 5, 2)
-        layout.addWidget(QLabel("Last login:"), 6, 1)
-        layout.addWidget(QLabel("Test Date"), 6, 2)
+        layout.addWidget(user_info, 0, 0, 1, 2)
 
+        # SQLite command that gets entire user row, besides ID
+        user_info_values = get_user_info(self.user_ID)
+        if not user_info_values:
+            layout.addWidget(QLabel("No user information found."), 1, 0)
+            return
+
+        # Adds user information to content
+        full_name = f"{str(user_info_values[0])} {str(user_info_values[1])}"
+        layout.addWidget(QLabel("Name:"), 1, 0)
+        layout.addWidget(QLabel(full_name), 1, 1)
+
+        layout.addWidget(QLabel("Age:"), 2, 0)
+        layout.addWidget(QLabel(str(user_info_values[3])), 2, 1)
+
+        layout.addWidget(QLabel("Gender:"), 3, 0)
+        layout.addWidget(QLabel(str(user_info_values[2])), 3, 1)
+
+        layout.addWidget(QLabel("E-Mail:"), 4, 0)
+        layout.addWidget(QLabel(str(user_info_values[6])), 4, 1)
+
+        layout.addWidget(QLabel("Created on:"), 5, 0)
+        layout.addWidget(QLabel(str(user_info_values[4])), 5, 1)
+
+        layout.addWidget(QLabel("Last login:"), 6, 0)
+        layout.addWidget(QLabel(str(user_info_values[5])), 6, 1)
 
 # ----------- User Dialog Windows -----------
 class CreateUserWindow(QDialog):
     def __init__(self, parent=None):
-            # Initialize window + information
         super().__init__(parent)
+
+        # Setup class
         self.setWindowTitle("Create User")
         self.setWindowIcon(QIcon("logo.ico"))
 
@@ -1047,11 +1075,10 @@ class CreateUserWindow(QDialog):
 
         self.center()
 
-            # Setting stylesheets and layout
         self.setStyleSheet(_style)
-
         layout = QGridLayout()
 
+        # Add content
         titel1 = QLabel("Please enter your user information:")
         titel2 = QLabel("Please select which items you would like to track:")
 
@@ -1069,7 +1096,6 @@ class CreateUserWindow(QDialog):
             margin-bottom: 10px;
         """)
 
-            # Adding widgets
         layout.addWidget(titel1, 0, 0,  alignment = Qt.AlignLeft)
         layout.addWidget(titel2, 6, 0, alignment = Qt.AlignLeft)
 
@@ -1118,7 +1144,7 @@ class CreateUserWindow(QDialog):
         layout.addWidget(self.check_input_drugs, 13, 1, alignment = Qt.AlignRight)
         layout.addWidget(self.check_input_eating, 14, 1, alignment = Qt.AlignRight)
 
-            # Creating send button and setting style
+        # Creating send button and setting style
         create_user_button = QPushButton("Create User")
         create_user_button.clicked.connect(self.on_create_clicked)
 
@@ -1137,7 +1163,6 @@ class CreateUserWindow(QDialog):
 
         self.setLayout(layout)
 
-        # Defining functions necesarry for window
     def center(self):
         screen = QApplication.primaryScreen()
         screen_geometry = screen.availableGeometry()
@@ -1204,11 +1229,14 @@ class CreateUserWindow(QDialog):
 class UserIDDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        # Setup class and variables
         self.setWindowTitle("Enter User ID")
-        self.user_ID = None  # This will store the result
+        self.user_ID = None
 
         layout = QVBoxLayout()
 
+        # Add content
         layout.addWidget(QLabel("Enter User E-Mail:"))
         self.input_line = QLineEdit()
         layout.addWidget(self.input_line)
@@ -1219,6 +1247,7 @@ class UserIDDialog(QDialog):
 
         self.setLayout(layout)
 
+    # Method that checks email and returns userID for the main window
     def submit(self):
         try:
             sql_conn = sqlite3.connect("healthapp.db")
@@ -1236,16 +1265,16 @@ class UserIDDialog(QDialog):
             if result is None:
                 # Show a warning message box
                 QMessageBox.warning(
-                    self,  # parent window
-                    "User Not Found",  # title
-                    f"No user found with email '{email_value}'"  # message
+                    self,
+                    "User Not Found",
+                    f"No user found with email '{email_value}'"
                 )
-                return  # keep the dialog open
+                return
 
             user_result = result[0]
 
             self.user_ID = user_result  # store input
-            self.accept()  # close dialog with QDialog.Accepted
+            self.accept()  # close dialog if completed
 
         except Exception as e:
             print("Error retrieving userID:", e)
@@ -1332,27 +1361,30 @@ class MainWindow(QMainWindow):
 
         self.setDockNestingEnabled(True)
 
-        #-------------------
-
         self.docks_left = []
         self.docks_right = []
         self.docks_initialized = False
 
     # -------------------- Methods --------------------
+    # Creates or removes dockable widgets when userID is updated
     def update_dockables(self):
-        # 1. Remove existing docks
+        # Remove existing docks if they exist
         for dock in self.docks_left + self.docks_right:
-            if dock is not None:  # Only delete if it exists
+            if dock is not None:
                 self.removeDockWidget(dock)
                 dock.deleteLater()
 
         self.docks_left.clear()
         self.docks_right.clear()
 
-        test_user_info = UserInfoTest()
-        self.create_dock("User Information", [test_user_info], side="right")
+        # Create a dock for user information, which is always set
+        test_user_info = UserInfoTest(self.user_ID)
+        self.create_dock("User Information", [test_user_info], side="right", max_width=300, max_height=200)
 
+        # Trackables are selected and created into dockable widgets
         trackables_me = get_user_trackables(self.user_ID)
+        tabbed_widgets = []
+        widgets_tab_names = []
 
         for item in trackables_me:
             if item[1] == 1:
@@ -1367,7 +1399,8 @@ class MainWindow(QMainWindow):
                 plot_anxiety.set_yaxis(21)
                 plot_anxiety.plot(anxiety_date, anxiety_value)
 
-                self.create_dock("Anxiety Data", [plot_anxiety], side="left")
+                tabbed_widgets.append(plot_anxiety)
+                widgets_tab_names.append("Anxiety Data")
 
             if item[1] == 2:
                 mood_value = []
@@ -1381,7 +1414,8 @@ class MainWindow(QMainWindow):
                 plot_mood.set_yaxis(10)
                 plot_mood.plot(mood_date, mood_value)
 
-                self.create_dock("Mood Data", [plot_mood], side="left")
+                tabbed_widgets.append(plot_mood)
+                widgets_tab_names.append("Mood Data")
 
             if item[1] == 3:
                 sleep_q_value = []
@@ -1408,7 +1442,9 @@ class MainWindow(QMainWindow):
 
                 plot_sleep_q.plot(sleep_l_date, sleep_l_value)
 
-                self.create_dock("Sleep Data", [plot_sleep_q], side="right")
+                tabbed_widgets.append(plot_sleep_q)
+                widgets_tab_names.append("Sleep Data")
+
 
             if item[1] == 5:
                 self_harm_value = []
@@ -1436,7 +1472,8 @@ class MainWindow(QMainWindow):
                 plot_alcohol_abuse.set_yaxis(12)
                 plot_alcohol_abuse.plot(alcohol_abuse_date, alcohol_abuse_value)
 
-                self.create_dock("Alcohol Abuse Data", [plot_alcohol_abuse], side="left")
+                tabbed_widgets.append(plot_alcohol_abuse)
+                widgets_tab_names.append("Alcohol Abuse Data")
 
             if item[1] == 7:
                 drug_abuse_value = []
@@ -1461,10 +1498,11 @@ class MainWindow(QMainWindow):
                     eating_habits_value.append(item2[1])
 
                 plot_eating_habits = MatplotlibWidget()
-                plot_eating_habits.set_yaxis(78)
+                plot_eating_habits.set_yaxis(78, 5)
                 plot_eating_habits.plot(eating_habits_date, eating_habits_value)
 
-                self.create_dock("Eating Habits Data", [plot_eating_habits], side="left")
+                tabbed_widgets.append(plot_eating_habits)
+                widgets_tab_names.append("Eating Habits Data")
 
             if item[1] == 9:
                 depression_value = []
@@ -1479,30 +1517,30 @@ class MainWindow(QMainWindow):
                 plot_depression.set_yaxis(27)
                 plot_depression.plot(depression_date, depression_value)
 
-                self.create_dock("Depression Data", [plot_depression], side="left")
+                tabbed_widgets.append(plot_depression)
+                widgets_tab_names.append("Depression Data")
 
-        # 2. Load user-specific data (example)
-        # dates_mood, values_mood = self.load_user_data()
-
-        # 3. Create new plot widgets
-        #plot_widget1 = MatplotlibWidget()
-        #plot_widget1.plot(dates_mood, values_mood)
+        # Widgets, which should be tabbed are stored in a list and given to helper function
+        self.create_tabbed_dock("Data Tab", tabbed_widgets, widgets_tab_names, side="left")
 
         self.docks_initialized = True
 
+    # Status bar for userID is updated on select
     def update_status(self):
         self.status.showMessage(f"Current User ID: {self.user_ID}")
 
+    # userID window is opened -> widgets in main, which require this ID are updated
     def open_user_dialog(self):
         dialog = UserIDDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            self.user_ID = dialog.user_ID  # update main window variable
+            self.user_ID = dialog.user_ID
+            update_login(self.user_ID)
             self.update_status()
             self.update_dockables()
 
-    def create_dock(self, title, widgets, side="left"):
+    def create_dock(self, title, widgets, side="left", max_width=None, max_height=None):
         """
-        Create a dock, add it to the left/right, and split evenly with existing docks.
+        Create a dock, add it to the left/right, split evenly, and optionally set max size.
         """
         dock = QDockWidget(title, self)
         dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -1514,13 +1552,18 @@ class MainWindow(QMainWindow):
             layout.addWidget(w)
         dock.setWidget(content_widget)
 
+        # Set maximum size if provided
+        if max_width or max_height:
+            content_widget.setMaximumSize(
+                max_width if max_width else QWIDGETSIZE_MAX,
+                max_height if max_height else QWIDGETSIZE_MAX
+            )
+
         if side.lower() == "left":
             self.addDockWidget(Qt.LeftDockWidgetArea, dock)
-            # Split with the last dock on the left (if exists)
             if self.docks_left:
                 self.splitDockWidget(self.docks_left[-1], dock, Qt.Vertical)
             self.docks_left.append(dock)
-
         elif side.lower() == "right":
             self.addDockWidget(Qt.RightDockWidgetArea, dock)
             if self.docks_right:
@@ -1529,6 +1572,32 @@ class MainWindow(QMainWindow):
 
         return dock
 
+    def create_tabbed_dock(self, title, widgets, widget_names, side="right"):
+        """
+        Create a single dock with multiple widgets as tabs.
+        """
+        first_dock = None
+        for i, w in enumerate(widgets):
+            dock = QDockWidget(widget_names[i], self)
+            dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+            dock.setFeatures(QDockWidget.DockWidgetMovable | QDockWidget.DockWidgetFloatable)
+            dock.setWidget(w)
+
+            if side.lower() == "left":
+                self.addDockWidget(Qt.LeftDockWidgetArea, dock)
+            else:
+                self.addDockWidget(Qt.RightDockWidgetArea, dock)
+
+            if first_dock:
+                # Widgets are merged as tab onto first dockable
+                self.tabifyDockWidget(first_dock, dock)
+            else:
+                # First widget is docked
+                first_dock = dock
+
+        return first_dock
+
+    # ---------- Methods to open classes/widgets used in action bar of main menu ----------
     def create_user_box(self):
         dialog = CreateUserWindow(self)
         dialog.exec_()
