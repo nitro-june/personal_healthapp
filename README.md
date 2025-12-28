@@ -52,7 +52,8 @@ The questionaire for **eating habits** is based on **EAT-26**, which is the most
 
 ### Miscellaneous
 
-- A scrolling text of a randomly chosen sentance, which are kind and positive.
+- A scrolling text of a randomly chosen sentance, which are kind and positive. -> it is possible to add your own sentances to the programm
+  - Just add a sentance as a new line in the <code>messages.txt</code> file and it will be randomly selected
 - Possibility for multiple users -> *currently it is a local application with a stand-alone-database, so there's no reason for multiple users* - theoretically changing the application to use a file-share-database should be possible
 -
 

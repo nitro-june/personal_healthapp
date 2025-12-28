@@ -988,6 +988,207 @@ class TrackEatingHabitsWindow(QDialog):
 
         self.move(x, y)
 
+# ----------- Action Windows for updating user infromation -----------
+
+class ChangeFN(QDialog):
+    def __init__(self, userID, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Change First Name")
+        self.userID = userID
+
+        layout = QVBoxLayout()
+
+        self.new_fname = QLineEdit()
+        self.submit_fname_button = QPushButton("Submit")
+        self.submit_fname_button.clicked.connect(self.submit_fname)
+
+        layout.addWidget(QLabel("Enter New First Name:"))
+        layout.addWidget(self.new_fname)
+        layout.addWidget(self.submit_fname_button)
+
+        self.setLayout(layout)
+
+    def submit_fname(self):
+        try:
+            new_fname_text = self.new_fname.text()
+
+            if not new_fname_text.strip():
+                print("First name is empty")
+                return
+
+            if self.userID is None:
+                print("userID is None")
+                return
+
+            update_fname(self.userID, new_fname_text)
+            self.accept()
+
+        except Exception as e:
+            print("submit_fname error:", repr(e))
+
+class ChangeLN(QDialog):
+    def __init__(self, userID, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Change Last Name")
+        self.userID = userID
+
+        layout = QVBoxLayout()
+
+        self.new_lname = QLineEdit()
+        self.submit_lname_button = QPushButton("Submit")
+        self.submit_lname_button.clicked.connect(self.submit_lname)
+
+        layout.addWidget(QLabel("Enter New Last Name:"))
+        layout.addWidget(self.new_lname)
+        layout.addWidget(self.submit_lname_button)
+
+        self.setLayout(layout)
+
+    def submit_lname(self):
+        try:
+            new_lname_text = self.new_lname.text()
+
+            if not new_lname_text.strip():
+                print("Last name is empty")
+                return
+
+            if self.userID is None:
+                print("userID is None")
+                return
+
+            update_lname(self.userID, new_lname_text)
+            self.accept()
+
+        except Exception as e:
+            print("submit_lname error:", repr(e))
+
+class ChangeGender(QDialog):
+    def __init__(self, userID, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Change Gender")
+        self.userID = userID
+
+        layout = QVBoxLayout()
+
+        self.new_gender = QLineEdit()
+        self.submit_gender_button = QPushButton("Submit")
+        self.submit_gender_button.clicked.connect(self.submit_gender)
+
+        layout.addWidget(QLabel("Enter New Gender:"))
+        layout.addWidget(self.new_gender)
+        layout.addWidget(self.submit_gender_button)
+
+        self.setLayout(layout)
+
+    def submit_gender(self):
+        try:
+            new_gender_text = self.new_gender.text()
+
+            if not new_gender_text.strip():
+                print("Gender is empty")
+                return
+
+            if self.userID is None:
+                print("userID is None")
+                return
+
+            update_gender(self.userID, new_gender_text)
+            self.accept()
+
+        except Exception as e:
+            print("submit_gender error:", repr(e))
+
+class ChangeAge(QDialog):
+    def __init__(self, userID, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Change Age")
+        self.userID = userID
+
+        layout = QVBoxLayout()
+
+        self.new_age = QLineEdit()
+        self.submit_age_button = QPushButton("Submit")
+        self.submit_age_button.clicked.connect(self.submit_age)
+
+        layout.addWidget(QLabel("Enter New Age:"))
+        layout.addWidget(self.new_age)
+        layout.addWidget(self.submit_age_button)
+
+        self.setLayout(layout)
+
+    def submit_age(self):
+        try:
+            age_text = self.new_age.text().strip()
+
+            if not age_text:
+                self.show_error("Age cannot be empty.")
+                return
+
+            if self.userID is None:
+                self.show_error("User ID is missing.")
+                return
+
+            try:
+                age_value = int(age_text)
+            except ValueError:
+                self.show_error("Please enter a valid integer for age.")
+                return
+
+            update_age(self.userID, age_value)
+
+            self.accept()
+
+        except Exception as e:
+            self.show_error(f"Unexpected error: {e}")
+
+    def show_error(self, message):
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Warning)
+        msg_box.setWindowTitle("Input Error")
+        msg_box.setText(message)
+        msg_box.exec_()
+
+class ChangeEmail(QDialog):
+    def __init__(self, userID, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Change E-Mail")
+        self.userID = userID
+
+        layout = QVBoxLayout()
+
+        self.new_email = QLineEdit()
+        self.submit_email_button = QPushButton("Submit")
+        self.submit_email_button.clicked.connect(self.submit_email)
+
+        layout.addWidget(QLabel("Enter New E-Mail:"))
+        layout.addWidget(self.new_email)
+        layout.addWidget(self.submit_email_button)
+
+        self.setLayout(layout)
+
+    def submit_email(self):
+        try:
+            new_email_text = self.new_email.text()
+
+            if not new_email_text.strip():
+                print("E-Mail is empty")
+                return
+
+            if self.userID is None:
+                print("userID is None")
+                return
+
+            update_email(self.userID, new_email_text)
+            self.accept()
+
+        except Exception as e:
+            print("submit_email error:", repr(e))
+
 # ----------- Widgets for Helper Method create_dock -----------
 class MatplotlibWidget(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -1226,6 +1427,57 @@ class CreateUserWindow(QDialog):
 
         self.accept()
 
+class UpdateUserDialog(QDialog):
+    def __init__(self, userID, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Update User")
+        self.userID = userID
+
+        layout = QVBoxLayout()
+
+        layout.addWidget(UserInfoTest(self.userID))
+
+        self.update_fn = QPushButton("Update First Name")
+        self.update_fn.clicked.connect(self.open_change_fn)
+        self.update_ln = QPushButton("Update Last Name")
+        self.update_ln.clicked.connect(self.open_change_ln)
+        self.update_gender = QPushButton("Update Gender")
+        self.update_gender.clicked.connect(self.open_change_gender)
+        self.update_age = QPushButton("Update Age")
+        self.update_age.clicked.connect(self.open_change_age)
+        self.update_email = QPushButton("Update Email")
+        self.update_email.clicked.connect(self.open_change_email)
+
+        if self.userID != None:
+            layout.addWidget(self.update_fn)
+            layout.addWidget(self.update_ln)
+            layout.addWidget(self.update_gender)
+            layout.addWidget(self.update_age)
+            layout.addWidget(self.update_email)
+
+        self.setLayout(layout)
+
+    def open_change_fn(self):
+        dialog = ChangeFN(self.userID, self)
+        dialog.exec_()
+
+    def open_change_ln(self):
+        dialog = ChangeLN(self.userID, self)
+        dialog.exec_()
+
+    def open_change_gender(self):
+        dialog = ChangeGender(self.userID, self)
+        dialog.exec_()
+
+    def open_change_age(self):
+        dialog = ChangeAge(self.userID, self)
+        dialog.exec_()
+
+    def open_change_email(self):
+        dialog = ChangeEmail(self.userID, self)
+        dialog.exec_()
+
 class UserIDDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1310,6 +1562,7 @@ class MainWindow(QMainWindow):
         change_user_action = user_menu.addAction("Change User")
         change_user_action.triggered.connect(self.open_user_dialog)
         modify_user_action = user_menu.addAction("Modify User")
+        modify_user_action.triggered.connect(self.create_user_change)
         delete_user_action = user_menu.addAction("Delete User")
 
         # Tracking menu actions
@@ -1600,6 +1853,10 @@ class MainWindow(QMainWindow):
     # ---------- Methods to open classes/widgets used in action bar of main menu ----------
     def create_user_box(self):
         dialog = CreateUserWindow(self)
+        dialog.exec_()
+
+    def create_user_change(self):
+        dialog = UpdateUserDialog(self.user_ID, self)
         dialog.exec_()
 
     def create_tracking_mood_box(self):

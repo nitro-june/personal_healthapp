@@ -218,6 +218,72 @@ def update_login(userID):
     conn.commit()
     conn.close()
 
+# --------- Functions for changing user data ---------
+def update_fname(userID, new_fname):
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE users SET first_name = ? WHERE userID = ?",
+                (new_fname, userID)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
+
+def update_lname(userID, new_lname):
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE users SET last_name = ? WHERE userID = ?",
+                (new_lname, userID)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
+
+def update_gender(userID, new_gender):
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE users SET gender = ? WHERE userID = ?",
+                (new_gender, userID)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
+
+def update_age(userID, new_age):
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE users SET age = ? WHERE userID = ?",
+                (new_age, userID)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
+
+def update_email(userID, new_email):
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE users SET email = ? WHERE userID = ?",
+                (new_email, userID)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
+
 # Simple SQLite command to get user row
 def get_user_info(userID):
     try:
