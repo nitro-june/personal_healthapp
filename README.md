@@ -3,7 +3,7 @@
 <br/>
 
 <p align="center">
-  <img width="300" height="300" src="logo.jpg">
+  <img width="150" height="150" src="Images/logo.jpg">
 </p>
 
 <br/>
@@ -57,15 +57,35 @@ The questionaire for **eating habits** is based on **EAT-26**, which is the most
 - Possibility for multiple users -> *currently it is a local application with a stand-alone-database, so there's no reason for multiple users* - theoretically changing the application to use a file-share-database should be possible
 -
 
+### SQLite Database
+
+#### Entity-Relationship Diagram
+
+![healthapp_ERD.png](Images/healthapp_ERD.png)
+
+#### Relational Data Model
+
+![healthapp_rDM.jpg](Images/healthapp_rDM.jpg)
+
 ---
 
 ## Basic Usage
 
+### Landing Screen
+
+![showcase1.gif](Images/showcase1.gif)
+
 ### Create a User
+
+![showcase2.gif](Images/showcase2.gif)
 
 ### Select a User
 
+![showcase3.gif](Images/showcase3.gif)
+
 ### Track your Data
+
+
 
 ### Displaying your Data
 

@@ -76,7 +76,7 @@ class TrackMoodWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Mood Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 100
         win_width = 300
@@ -155,7 +155,7 @@ class TrackAnxietyWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Anxiety Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 600
         win_width = 600
@@ -286,7 +286,7 @@ class TrackDepressionWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Depression Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 700
         win_width = 600
@@ -438,7 +438,7 @@ class TrackSleepWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Sleep Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 150
         win_width = 300
@@ -535,7 +535,7 @@ class TrackSelfHarmWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Self Harm Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 100
         win_width = 300
@@ -616,7 +616,7 @@ class TrackAlcoholAbuseWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Alcohol Abuse Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 300
         win_width = 300
@@ -723,7 +723,7 @@ class TrackDrugAbuseWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Drug Abuse Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 150
         win_width = 600
@@ -815,7 +815,7 @@ class TrackEatingHabitsWindow(QDialog):
         self.user_ID = user_ID
 
         self.setWindowTitle("Eating Habits Questionaire")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_height = 600
         win_width = 800
@@ -996,6 +996,7 @@ class ChangeFN(QDialog):
 
         self.setWindowTitle("Change First Name")
         self.userID = userID
+        request_user_dialog = pyqtSignal()
 
         layout = QVBoxLayout()
 
@@ -1208,9 +1209,74 @@ class MatplotlibWidget(QWidget):
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
+        # PNG Overlay
+        self.overlay_label = QLabel(self)
+        self.overlay_label.setAlignment(Qt.AlignCenter)
+        self.overlay_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.overlay_label.setScaledContents(True)
+        self.overlay_label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.overlay_label.hide()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.overlay_label.isVisible() and not self.overlay_label.pixmap().isNull():
+            pixmap = self.overlay_label.pixmap()
+            lbl_width = pixmap.width()
+            lbl_height = pixmap.height()
+            widget_width = self.width()
+            widget_height = self.height()
+
+            # Keep it in bottom-left (or chosen corner)
+            x = 0
+            y = widget_height - lbl_height
+            self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
+    def set_overlay(self, image_path, width=None, height=None, corner='bottom-left'):
+        pixmap = QPixmap(image_path)
+        if pixmap.isNull():
+            return
+
+        # Scale the pixmap if width/height provided
+        if width and height:
+            pixmap = pixmap.scaled(width, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        self.overlay_label.setPixmap(pixmap)
+        self.overlay_label.show()
+
+        # Position the overlay
+        lbl_width = pixmap.width()
+        lbl_height = pixmap.height()
+        widget_width = self.width()
+        widget_height = self.height()
+
+        if corner == 'bottom-left':
+            x = 0
+            y = widget_height - lbl_height
+        elif corner == 'bottom-right':
+            x = widget_width - lbl_width
+            y = widget_height - lbl_height
+        elif corner == 'top-left':
+            x = 0
+            y = 0
+        elif corner == 'top-right':
+            x = widget_width - lbl_width
+            y = 0
+        else:  # center
+            x = (widget_width - lbl_width) // 2
+            y = (widget_height - lbl_height) // 2
+
+        self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
+    def clear_overlay(self):
+        self.overlay_label.hide()
+
     def set_yaxis(self, yaxis, step=1):
         self.axes.set_ylim(0, yaxis)
         self.axes.set_yticks(range(0, yaxis + 1, step))
+
+    def set_xaxis(self, xaxis, step=1):
+        self.axes.set_xlim(0, xaxis)
+        self.axes.set_xticks(range(0, xaxis + 1, step))
 
     def plot(self, x, y, **kwargs):
         self.axes.plot(x, y, **kwargs)
@@ -1261,6 +1327,146 @@ class UserInfoTest(QWidget):
         layout.addWidget(QLabel("Last login:"), 6, 0)
         layout.addWidget(QLabel(str(user_info_values[5])), 6, 1)
 
+class UserSelfHarm(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("This is a test!")
+
+        layout = QVBoxLayout()
+
+        test_text = QLabel("Hello world!")
+
+        layout.addWidget(test_text)
+
+        # PNG Overlay
+        self.overlay_label = QLabel(self)
+        self.overlay_label.setAlignment(Qt.AlignCenter)
+        self.overlay_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.overlay_label.setScaledContents(True)
+        self.overlay_label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.overlay_label.hide()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.overlay_label.isVisible() and not self.overlay_label.pixmap().isNull():
+            pixmap = self.overlay_label.pixmap()
+            lbl_width = pixmap.width()
+            lbl_height = pixmap.height()
+            widget_width = self.width()
+            widget_height = self.height()
+
+            # Keep it in bottom-left (or chosen corner)
+            x = 0
+            y = widget_height - lbl_height
+            self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
+    def set_overlay(self, image_path, width=None, height=None, corner='bottom-left'):
+        pixmap = QPixmap(image_path)
+        if pixmap.isNull():
+            return
+
+        # Scale the pixmap if width/height provided
+        if width and height:
+            pixmap = pixmap.scaled(width, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        self.overlay_label.setPixmap(pixmap)
+        self.overlay_label.show()
+
+        # Position the overlay
+        lbl_width = pixmap.width()
+        lbl_height = pixmap.height()
+        widget_width = self.width()
+        widget_height = self.height()
+
+        if corner == 'bottom-left':
+            x = 0
+            y = widget_height - lbl_height
+        elif corner == 'bottom-right':
+            x = widget_width - lbl_width
+            y = widget_height - lbl_height
+        elif corner == 'top-left':
+            x = 0
+            y = 0
+        elif corner == 'top-right':
+            x = widget_width - lbl_width
+            y = 0
+        else:  # center
+            x = (widget_width - lbl_width) // 2
+            y = (widget_height - lbl_height) // 2
+
+        self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
+class UserDrugAbuse(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("This is a test!")
+
+        layout = QVBoxLayout()
+
+        test_text = QLabel("Hello world!")
+
+        layout.addWidget(test_text)
+
+        # PNG Overlay
+        self.overlay_label = QLabel(self)
+        self.overlay_label.setAlignment(Qt.AlignCenter)
+        self.overlay_label.setAttribute(Qt.WA_TransparentForMouseEvents)
+        self.overlay_label.setScaledContents(True)
+        self.overlay_label.setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.overlay_label.hide()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if self.overlay_label.isVisible() and not self.overlay_label.pixmap().isNull():
+            pixmap = self.overlay_label.pixmap()
+            lbl_width = pixmap.width()
+            lbl_height = pixmap.height()
+            widget_width = self.width()
+            widget_height = self.height()
+
+            # Keep it in bottom-left (or chosen corner)
+            x = 0
+            y = widget_height - lbl_height
+            self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
+    def set_overlay(self, image_path, width=None, height=None, corner='bottom-left'):
+        pixmap = QPixmap(image_path)
+        if pixmap.isNull():
+            return
+
+        # Scale the pixmap if width/height provided
+        if width and height:
+            pixmap = pixmap.scaled(width, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        self.overlay_label.setPixmap(pixmap)
+        self.overlay_label.show()
+
+        # Position the overlay
+        lbl_width = pixmap.width()
+        lbl_height = pixmap.height()
+        widget_width = self.width()
+        widget_height = self.height()
+
+        if corner == 'bottom-left':
+            x = 0
+            y = widget_height - lbl_height
+        elif corner == 'bottom-right':
+            x = widget_width - lbl_width
+            y = widget_height - lbl_height
+        elif corner == 'top-left':
+            x = 0
+            y = 0
+        elif corner == 'top-right':
+            x = widget_width - lbl_width
+            y = 0
+        else:  # center
+            x = (widget_width - lbl_width) // 2
+            y = (widget_height - lbl_height) // 2
+
+        self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
 # ----------- User Dialog Windows -----------
 class CreateUserWindow(QDialog):
     def __init__(self, parent=None):
@@ -1268,7 +1474,7 @@ class CreateUserWindow(QDialog):
 
         # Setup class
         self.setWindowTitle("Create User")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         win_width = 800
         win_height = 600
@@ -1543,10 +1749,10 @@ class MainWindow(QMainWindow):
 
         # Set Application Defaults
         self.setWindowTitle("HealthApp")
-        self.setWindowIcon(QIcon("logo.ico"))
+        self.setWindowIcon(QIcon("Images/logo.ico"))
 
         # Window Sizes in 16:9
-        self.setMinimumSize(QSize(854, 480))
+        self.setMinimumSize(QSize(1200, 675))
         self.setMaximumSize(QSize(1920, 1080))
         self.resize(1600, 900)
 
@@ -1586,6 +1792,7 @@ class MainWindow(QMainWindow):
 
         # Application actions
         application_menu = menubar.addMenu("Actions")
+        change_style_action = application_menu.addAction("Change Style")
         exit_application_action = application_menu.addAction("Exit")
         exit_application_action.triggered.connect(self.close)
 
@@ -1616,6 +1823,7 @@ class MainWindow(QMainWindow):
 
         self.docks_left = []
         self.docks_right = []
+        self.docks_tabbed = []
         self.docks_initialized = False
 
     # -------------------- Methods --------------------
@@ -1627,6 +1835,11 @@ class MainWindow(QMainWindow):
                 self.removeDockWidget(dock)
                 dock.deleteLater()
 
+        for dock in self.docks_tabbed:
+            self.removeDockWidget(dock)
+            dock.deleteLater()
+
+        self.docks_tabbed.clear()
         self.docks_left.clear()
         self.docks_right.clear()
 
@@ -1651,6 +1864,7 @@ class MainWindow(QMainWindow):
                 plot_anxiety = MatplotlibWidget()
                 plot_anxiety.set_yaxis(21)
                 plot_anxiety.plot(anxiety_date, anxiety_value)
+                plot_anxiety.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_anxiety)
                 widgets_tab_names.append("Anxiety Data")
@@ -1708,9 +1922,12 @@ class MainWindow(QMainWindow):
                     self_harm_date.append(item2[0])
                     self_harm_value.append(item2[1])
 
-                plot_self_harm = QLabel("TEST")
+                plot_self_harm = UserSelfHarm()
+                plot_self_harm.set_overlay("Images/checkmark.png", width=300, height=300, corner="bottom-left")
+                #plot_self_harm.setFixedSize(250, 250)
+                #plot_self_harm.setStyleSheet("QLabel { background-image: url(checkmark.png); background-size: cover; }")
 
-                self.create_dock("Self Harm Data", [plot_self_harm], side="right")
+                self.create_dock("Self Harm Data", [plot_self_harm], side="right", max_width=300, max_height=300)
 
             if item[1] == 6:
                 alcohol_abuse_value = []
@@ -1737,9 +1954,22 @@ class MainWindow(QMainWindow):
                     drug_abuse_date.append(item2[0])
                     drug_abuse_value.append(item2[1])
 
-                plot_drug_abuse = QLabel("TEST")
+                #plot_drug_abuse = QLabel("TEST")
+                #plot_drug_abuse.setFixedSize(250, 250)
+                plot_drug_abuse = UserSelfHarm()
 
-                self.create_dock("Drug Abuse Data", [plot_drug_abuse], side="right")
+                value_testing1 = 3
+                image_selection_drug_abuse = ""
+                if value_testing1 == 1:
+                    image_selection_drug_abuse = "Images/checkmark.png"
+                elif value_testing1 == 2:
+                    image_selection_drug_abuse = "Images/alert_yellow.png"
+                else:
+                    image_selection_drug_abuse = "Images/alert_red.png"
+                #plot_drug_abuse.setStyleSheet("QLabel { background-image: url(" + image_selection_drug_abuse + "); background-size: cover; }")
+                plot_drug_abuse.set_overlay(image_selection_drug_abuse, width=300, height=300, corner="bottom-left")
+
+                self.create_dock("Drug Abuse Data", [plot_drug_abuse], side="right", max_width=300, max_height=300)
 
             if item[1] == 8:
                 eating_habits_value = []
@@ -1847,6 +2077,8 @@ class MainWindow(QMainWindow):
             else:
                 # First widget is docked
                 first_dock = dock
+
+            self.docks_tabbed.append(dock)
 
         return first_dock
 
