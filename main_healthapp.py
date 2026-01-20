@@ -20,7 +20,21 @@ from matplotlib.figure import Figure
 
 from refactor.functions_healthapp import *
 from refactor.functions_tests import *
+import os.path
 
+# ---------- Create Databse if needed -----------
+current_dir = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(current_dir, "healthapp.db")
+create_db_path = os.path.join(current_dir, "create_db.py")
+
+if not os.path.exists(db_path):
+    print("Database does not exist, creating database...")
+    with open(create_db_path, "r") as f:
+        exec(f.read())
+else:
+    print(f"{db_path} already exists. Skipping create_db.py execution.")
+
+# --------- Read Style Files ---------
 with open("MaterialDark.qss", "r") as f:
     _style = f.read()
 
