@@ -7,6 +7,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import sqlite3
+from scipy.interpolate import make_interp_spline
+import matplotlib.dates as mdates
+import numpy as np
+from datetime import datetime
 
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg,
@@ -19,49 +23,6 @@ from refactor.functions_tests import *
 
 with open("MaterialDark.qss", "r") as f:
     _style = f.read()
-
-class ScrollingLabel(QWidget):
-    def __init__(self, text, parent=None):
-        super().__init__(parent)
-
-        # Setup for widget
-        self.setMinimumHeight(40)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-
-        self.label = QLabel(text, self)
-        self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-
-        font = QFont()
-        font.setFamily("Arial")
-        font.setPointSize(10)
-        font.setBold(True)
-        self.label.setFont(font)
-
-        # Animation settings
-        self.animation = QPropertyAnimation(self.label, b"pos")
-        self.animation.setDuration(13000)
-        self.animation.setLoopCount(-1)
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        self.start_animation()
-
-    # Animation is started using the label
-    def start_animation(self):
-        self.label.adjustSize()
-        container_width = self.width()
-        start_pos = QPoint(container_width, 0)
-        end_pos = QPoint(-self.label.width(), 0)
-        self.label.move(start_pos)
-        self.animation.setStartValue(start_pos)
-        self.animation.setEndValue(end_pos)
-        self.animation.start()
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        # restart animation when resized
-        self.animation.stop()
-        self.start_animation()
 
 # ---------- Action Windows for Tracking -----------
 
@@ -1190,26 +1151,26 @@ class ChangeEmail(QDialog):
         except Exception as e:
             print("submit_email error:", repr(e))
 
-# ----------- Widgets for Helper Method create_dock -----------
+# ----------- Custom Widgets for GUI -----------
 class MatplotlibWidget(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
         super().__init__(parent)
 
-        # Create the Matplotlib Figure and Canvas
+        # Matplotlib figure and canvas
         self.figure = Figure(figsize=(width, height), dpi=dpi)
         self.canvas = FigureCanvasQTAgg(self.figure)
-        self.axes = self.figure.add_subplot(111)  # single subplot
+        self.axes = self.figure.add_subplot(111)
 
-        # Create the navigation toolbar
+        # Navigation toolbar
         self.toolbar = NavigationToolbar(self.canvas, self)
 
-        # Layout
+        # Layout for canvas and toolbar
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         self.setLayout(layout)
 
-        # PNG Overlay
+        # PNG Overlay as a child of the QWidget, not the canvas
         self.overlay_label = QLabel(self)
         self.overlay_label.setAlignment(Qt.AlignCenter)
         self.overlay_label.setAttribute(Qt.WA_TransparentForMouseEvents)
@@ -1219,6 +1180,7 @@ class MatplotlibWidget(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        # Correct positioning relative to the widget itself
         if self.overlay_label.isVisible() and not self.overlay_label.pixmap().isNull():
             pixmap = self.overlay_label.pixmap()
             lbl_width = pixmap.width()
@@ -1226,7 +1188,7 @@ class MatplotlibWidget(QWidget):
             widget_width = self.width()
             widget_height = self.height()
 
-            # Keep it in bottom-left (or chosen corner)
+            # Always keep in bottom-left of the widget
             x = 0
             y = widget_height - lbl_height
             self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
@@ -1236,19 +1198,18 @@ class MatplotlibWidget(QWidget):
         if pixmap.isNull():
             return
 
-        # Scale the pixmap if width/height provided
         if width and height:
             pixmap = pixmap.scaled(width, height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
 
         self.overlay_label.setPixmap(pixmap)
         self.overlay_label.show()
 
-        # Position the overlay
         lbl_width = pixmap.width()
         lbl_height = pixmap.height()
         widget_width = self.width()
         widget_height = self.height()
 
+        # Position in chosen corner relative to the QWidget
         if corner == 'bottom-left':
             x = 0
             y = widget_height - lbl_height
@@ -1267,24 +1228,33 @@ class MatplotlibWidget(QWidget):
 
         self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
 
-    def clear_overlay(self):
-        self.overlay_label.hide()
 
-    def set_yaxis(self, yaxis, step=1):
-        self.axes.set_ylim(0, yaxis)
-        self.axes.set_yticks(range(0, yaxis + 1, step))
+    def plot_dates_smooth(self, dates_str, y_values, color='blue', marker=None, linestyle='-', **kwargs):
+        dates = [datetime.strptime(d, "%Y-%m-%d") for d in dates_str]
+        x = mdates.date2num(dates)
+        y = np.array(y_values)
 
-    def set_xaxis(self, xaxis, step=1):
-        self.axes.set_xlim(0, xaxis)
-        self.axes.set_xticks(range(0, xaxis + 1, step))
+        if len(x) > 3:
+            x_smooth = np.linspace(x.min(), x.max(), 300)
+            spline = make_interp_spline(x, y, k=3)
+            y_smooth = spline(x_smooth)
+            self.axes.plot(mdates.num2date(x_smooth), y_smooth, color=color, marker=marker, linestyle=linestyle, **kwargs)
+        else:
+            self.axes.plot(mdates.num2date(x), y, color=color, marker=marker, linestyle=linestyle, **kwargs)
 
-    def plot(self, x, y, **kwargs):
-        self.axes.plot(x, y, **kwargs)
-        self.canvas.draw()  # Refresh the canvas
+        self.axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+        self.axes.xaxis.set_major_locator(mdates.AutoDateLocator())
+        self.figure.autofmt_xdate()
+        self.axes.grid(True)
+        self.canvas.draw()
 
     def clear(self):
         self.axes.cla()
         self.canvas.draw()
+
+    def set_yaxis(self, yaxis, step=1):
+        self.axes.set_ylim(0, yaxis)
+        self.axes.set_yticks(range(0, yaxis + 1, step))
 
 class UserInfoTest(QWidget):
     def __init__(self, user_ID, parent=None):
@@ -1466,6 +1436,49 @@ class UserDrugAbuse(QWidget):
             y = (widget_height - lbl_height) // 2
 
         self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
+
+class ScrollingLabel(QWidget):
+    def __init__(self, text, parent=None):
+        super().__init__(parent)
+
+        # Setup for widget
+        self.setMinimumHeight(40)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+
+        self.label = QLabel(text, self)
+        self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+
+        font = QFont()
+        font.setFamily("Arial")
+        font.setPointSize(10)
+        font.setBold(True)
+        self.label.setFont(font)
+
+        # Animation settings
+        self.animation = QPropertyAnimation(self.label, b"pos")
+        self.animation.setDuration(13000)
+        self.animation.setLoopCount(-1)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.start_animation()
+
+    # Animation is started using the label
+    def start_animation(self):
+        self.label.adjustSize()
+        container_width = self.width()
+        start_pos = QPoint(container_width, 0)
+        end_pos = QPoint(-self.label.width(), 0)
+        self.label.move(start_pos)
+        self.animation.setStartValue(start_pos)
+        self.animation.setEndValue(end_pos)
+        self.animation.start()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # restart animation when resized
+        self.animation.stop()
+        self.start_animation()
 
 # ----------- User Dialog Windows -----------
 class CreateUserWindow(QDialog):
@@ -1689,7 +1702,7 @@ class UserIDDialog(QDialog):
         super().__init__(parent)
 
         # Setup class and variables
-        self.setWindowTitle("Enter User ID")
+        self.setWindowTitle("Login")
         self.user_ID = None
 
         layout = QVBoxLayout()
@@ -1740,6 +1753,48 @@ class UserIDDialog(QDialog):
         finally:
             sql_conn.close()
 
+class DeleteUserID(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Setup Window
+        self.setWindowTitle("Delete User")
+        layout = QVBoxLayout()
+
+        layout.addWidget(QLabel("Enter UserID:"))
+        self.input_line = QLineEdit()
+        layout.addWidget(self.input_line)
+
+        submit_btn = QPushButton("Delete")
+        submit_btn.clicked.connect(self.submit)
+
+        layout.addWidget(submit_btn)
+
+        self.setLayout(layout)
+
+    def submit(self):
+        text = self.input_line.text().strip()
+        if not text.isdigit():
+            QMessageBox.warning(self, "Invalid Input", "UserID must be a number.")
+            return
+
+        user_id = int(text)
+
+        # Intermediate pop-up to confirm
+        reply = QMessageBox.question(
+            self,
+            "Confirm Deletion",
+            f"Are you sure you want to permanently delete user {user_id}?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply != QMessageBox.Yes:
+            return  # user cancelled
+
+        delete_user(user_id)
+        self.accept()
+
 #   ----------- Main Window -----------
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -1753,7 +1808,7 @@ class MainWindow(QMainWindow):
 
         # Window Sizes in 16:9
         self.setMinimumSize(QSize(1200, 675))
-        self.setMaximumSize(QSize(1920, 1080))
+        self.setMaximumSize(QSize(geometry.width(), geometry.height()))
         self.resize(1600, 900)
 
         self.setStyleSheet(_style)
@@ -1770,6 +1825,7 @@ class MainWindow(QMainWindow):
         modify_user_action = user_menu.addAction("Modify User")
         modify_user_action.triggered.connect(self.create_user_change)
         delete_user_action = user_menu.addAction("Delete User")
+        delete_user_action.triggered.connect(self.create_delete_user)
 
         # Tracking menu actions
         tracking_menu = menubar.addMenu("Tracking")
@@ -1853,25 +1909,23 @@ class MainWindow(QMainWindow):
         widgets_tab_names = []
 
         for item in trackables_me:
-            if item[1] == 1:
-                anxiety_value = []
-                anxiety_date = []
+            if item[1] == 1:  # Anxiety
+                anxiety_date, anxiety_value = [], []
                 values_anxiety = get_values(item[0])
-                for item2 in values_anxiety:
-                    anxiety_date.append(item2[0])
-                    anxiety_value.append(item2[1])
+                for v in values_anxiety:
+                    anxiety_date.append(v[0])
+                    anxiety_value.append(v[1])
 
                 plot_anxiety = MatplotlibWidget()
                 plot_anxiety.set_yaxis(21)
-                plot_anxiety.plot(anxiety_date, anxiety_value)
+                plot_anxiety.plot_dates_smooth(anxiety_date, anxiety_value, color='orange', marker=None, linestyle='-', linewidth=2)
                 plot_anxiety.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_anxiety)
                 widgets_tab_names.append("Anxiety Data")
 
             if item[1] == 2:
-                mood_value = []
-                mood_date = []
+                mood_date, mood_value = [], []
                 values_mood = get_values(item[0])
                 for item2 in values_mood:
                     mood_date.append(item2[0])
@@ -1879,14 +1933,14 @@ class MainWindow(QMainWindow):
 
                 plot_mood = MatplotlibWidget()
                 plot_mood.set_yaxis(10)
-                plot_mood.plot(mood_date, mood_value)
+                plot_mood.plot_dates_smooth(mood_date, mood_value, color='darkslategrey', marker=None, linestyle='-', linewidth=2)
+                plot_mood.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_mood)
                 widgets_tab_names.append("Mood Data")
 
             if item[1] == 3:
-                sleep_q_value = []
-                sleep_q_date = []
+                sleep_q_date, sleep_q_value = [], []
                 values_sleep_q = get_values(item[0])
 
                 for item2 in values_sleep_q:
@@ -1895,19 +1949,19 @@ class MainWindow(QMainWindow):
 
                 plot_sleep_q = MatplotlibWidget()
                 plot_sleep_q.set_yaxis(10)
-                plot_sleep_q.plot(sleep_q_date, sleep_q_value)
+                plot_sleep_q.plot_dates_smooth(sleep_q_date, sleep_q_value, color='darkviolet', marker=None, linestyle='-', linewidth=2)
                 #self.create_dock("Sleep Data", [plot_sleep], side="left")
 
             if item[1] == 4:
-                sleep_l_value = []
-                sleep_l_date = []
+                sleep_l_date, sleep_l_value = [], []
                 values_sleep_l = get_values(item[0])
 
                 for item2 in values_sleep_l:
                     sleep_l_date.append(item2[0])
                     sleep_l_value.append(item2[1])
 
-                plot_sleep_q.plot(sleep_l_date, sleep_l_value)
+                plot_sleep_q.plot_dates_smooth(sleep_l_date, sleep_l_value, color='crimson', marker=None, linestyle='-', linewidth=2)
+                plot_sleep_q.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_sleep_q)
                 widgets_tab_names.append("Sleep Data")
@@ -1930,8 +1984,7 @@ class MainWindow(QMainWindow):
                 self.create_dock("Self Harm Data", [plot_self_harm], side="right", max_width=300, max_height=300)
 
             if item[1] == 6:
-                alcohol_abuse_value = []
-                alcohol_abuse_date = []
+                alcohol_abuse_date, alcohol_abuse_value = [], []
                 values_alcohol_abuse = get_values(item[0])
 
                 for item2 in values_alcohol_abuse:
@@ -1940,7 +1993,8 @@ class MainWindow(QMainWindow):
 
                 plot_alcohol_abuse = MatplotlibWidget()
                 plot_alcohol_abuse.set_yaxis(12)
-                plot_alcohol_abuse.plot(alcohol_abuse_date, alcohol_abuse_value)
+                plot_alcohol_abuse.plot_dates_smooth(alcohol_abuse_date, alcohol_abuse_value, color='forestgreen', marker=None, linestyle='-', linewidth=2)
+                plot_alcohol_abuse.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_alcohol_abuse)
                 widgets_tab_names.append("Alcohol Abuse Data")
@@ -1971,9 +2025,8 @@ class MainWindow(QMainWindow):
 
                 self.create_dock("Drug Abuse Data", [plot_drug_abuse], side="right", max_width=300, max_height=300)
 
-            if item[1] == 8:
-                eating_habits_value = []
-                eating_habits_date = []
+            if item[1] == 8:  # Eating Habits
+                eating_habits_date, eating_habits_value = [], []
                 values_eating_habits = get_values(item[0])
 
                 for item2 in values_eating_habits:
@@ -1981,15 +2034,22 @@ class MainWindow(QMainWindow):
                     eating_habits_value.append(item2[1])
 
                 plot_eating_habits = MatplotlibWidget()
-                plot_eating_habits.set_yaxis(78, 5)
-                plot_eating_habits.plot(eating_habits_date, eating_habits_value)
+                plot_eating_habits.set_yaxis(78, step=5)
+                plot_eating_habits.plot_dates_smooth(
+                    eating_habits_date,
+                    eating_habits_value,
+                    color='navy',
+                    marker=None,
+                    linestyle='-',
+                    linewidth=2
+                )
+                plot_eating_habits.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_eating_habits)
                 widgets_tab_names.append("Eating Habits Data")
 
-            if item[1] == 9:
-                depression_value = []
-                depression_date = []
+            if item[1] == 9:  # Depression
+                depression_date, depression_value = [], []
                 values_depression = get_values(item[0])
 
                 for item2 in values_depression:
@@ -1998,7 +2058,15 @@ class MainWindow(QMainWindow):
 
                 plot_depression = MatplotlibWidget()
                 plot_depression.set_yaxis(27)
-                plot_depression.plot(depression_date, depression_value)
+                plot_depression.plot_dates_smooth(
+                    depression_date,
+                    depression_value,
+                    color='red',
+                    marker=None,
+                    linestyle='-',
+                    linewidth=2
+                )
+                plot_depression.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_depression)
                 widgets_tab_names.append("Depression Data")
@@ -2021,6 +2089,7 @@ class MainWindow(QMainWindow):
             self.update_status()
             self.update_dockables()
 
+    # Creates dockable widgets in main window
     def create_dock(self, title, widgets, side="left", max_width=None, max_height=None):
         """
         Create a dock, add it to the left/right, split evenly, and optionally set max size.
@@ -2055,6 +2124,7 @@ class MainWindow(QMainWindow):
 
         return dock
 
+    # Creates a docked widget, which has several tabs
     def create_tabbed_dock(self, title, widgets, widget_names, side="right"):
         """
         Create a single dock with multiple widgets as tabs.
@@ -2083,6 +2153,10 @@ class MainWindow(QMainWindow):
         return first_dock
 
     # ---------- Methods to open classes/widgets used in action bar of main menu ----------
+    def create_delete_user(self):
+        dialog = DeleteUserID(self)
+        dialog.exec_()
+
     def create_user_box(self):
         dialog = CreateUserWindow(self)
         dialog.exec_()
@@ -2135,6 +2209,8 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    screen = app.primaryScreen()
+    geometry = screen.geometry()
     window = MainWindow()
     window.show()
     sys.exit(app.exec_())

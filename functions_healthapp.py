@@ -300,3 +300,37 @@ def get_user_info(userID):
     except sqlite3.Error as e:
         print("Error selecting user information:", e)
         return None
+
+def delete_user(userID):
+    trackables = get_user_trackables(userID)
+
+    try:
+        with sqlite3.connect("healthapp.db") as conn:
+            cursor = conn.cursor()
+
+            for item in trackables:
+                trackable_id = item[0]
+
+                cursor.execute(
+                    "DELETE FROM user_trackables_entries WHERE user_trackablesID = ?",
+                    (trackable_id,)
+                )
+
+                cursor.execute(
+                    "DELETE FROM bool_user_trackables WHERE user_trackablesID = ?",
+                    (trackable_id,)
+                )
+
+            cursor.execute(
+                "DELETE FROM user_trackables WHERE userID = ?",
+                (userID,)
+            )
+
+            cursor.execute(
+                "DELETE FROM users WHERE userID = ?",
+                (userID,)
+            )
+
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
