@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthapp Summary</title>
+    <link rel="stylesheet" href="src_html/style.css">
+    <link rel="icon" href="Images/logo.ico" type="image/x-icon">
+  </head>
+  <body>
+
+    <header class="w3-container w3-blue-grey w3-xlarge" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>Healthapp Summary - {{ name }}</span>
+        <img src="Images/logo.jpg" style="height:35px;">
+    </header>
+
+    <div class="w3-container" style="font-size:11px">
+        <div class="w3-container w3-grey">
+            <p style="font-size:7px; text-align:center">The following information is based on user-provided input and may contain inaccuracies due to reporting errors. This summary was generated automatically from user input and has not been reviewed or prepared by a medical professional.</p>
+        </div>
+        <p style="margin-left: 6%; margin-right: 6%">This summary is intended to assist the user in presenting and discussing their tracked data with a medical professional or for personal record-keeping. The recorded information is derived from standardized medical screening instruments addressing various concerns. Each instrument is described in greater detail within its respective section.</p>
+    </div>
+
+    <div class="personal-card">
+        <img src="Images/forapp1.png" alt="Profile Picture" class="profile-pic">
+        <div class="card-content">
+            <h3>{{ name }}</h3>
+            <p><strong>Age:</strong> {{ user_info[3] }}</p>
+            <p><strong>Gender:</strong> {{ user_info[2] }}</p>
+            <p><strong>E-Mail:</strong> {{ user_info[6] }}</p>
+            <p><strong>Started Tracking:</strong> {{ user_info[4] }}</p>
+        </div>
+    </div>
+
+    <div class="w3-container" style="margin-top:20px">
+        {% for item in trackables %}
+            <div>
+                <br>
+                <h5>Subject: {{ item[0][0] }}</h5>
+                <hr>
+                {% if item[0][0] == "Anxiety" %}
+                    <p>The information presented here is derived from the GAD-7<sup>1</sup> screening instrument. Although originally developed for generalized anxiety disorder, the GAD-7 demonstrates reasonable validity for detecting other common anxiety disorders as well.</p>
+                {% elif item[0][0] == "Mood" %}
+                    <p>This assessment is based on a general mood scale ranging from 0 to 10, where 0 indicates the lowest mood and 10 indicates the most positive mood.</p>
+                {% elif item[0][0] == "Sleep Quality" %}
+                    <p>The data presented reflects a self-reported measure of sleep quality on a 0 to 10 scale, with 0 representing very poor sleep and 10 representing excellent sleep quality.</p>
+                {% elif item[0][0] == "Sleep Length" %}
+                    <p>This measure captures self-reported sleep duration on a scale of 0 to 10, where lower scores indicate shorter sleep periods and higher scores indicate longer sleep periods.</p>
+                {% elif item[0][0] == "Self Harm" %}
+                    <p>The information is based on a straightforward questionnaire indicating whether self-harm behaviors occurred or were absent during the assessed period.</p>
+                {% elif item[0][0] == "Alcohol Abuse" %}
+                    <p>This summary is informed by the AUDIT-C<sup>1</sup> (Alcohol Use Disorder Identification Test), a brief screening tool designed to identify patterns of alcohol misuse.</p>
+                {% elif item[0][0] == "Drug Abuse" %}
+                    <p>Further assessment is recommended to evaluate substance use patterns and potential risks.</p>
+                {% elif item[0][0] == "Eating Habits" %}
+                    <p>The information is based on a shortened version of the EAT-26<sup>1</sup>, a standardized self-report instrument for assessing disordered eating behaviors.</p>
+                {% elif item[0][0] == "Depression" %}
+                    <p>This information is derived from the PHQ-9<sup>1</sup> screening tool, which is widely used for screening, diagnosing, monitoring, and assessing the severity of depressive symptoms.</p>
+                {% else %}
+                    <p>Welcome.</p>
+                {% endif %}
+                <hr class="split-line">
+            </div>
+        {% endfor %}
+    </div>
+  </body>
+
+  <hr class="footnote-divider">
+
+    <section class="footnotes">
+        <p><sup>1</sup> The screening tests and tools on which this information is based were developed using publicly available reference materials. One source consulted for several of these instruments was the National HIV Curriculum (www.hiv.uw.edu), where the screening tools were accessed through the "Tools & Calculators" section.</p>
+    </section>
+
+</html>

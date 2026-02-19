@@ -28,7 +28,7 @@ The print to PDF feature for the trackables uses ... (Build this with quick desc
 
 You are able to track following things in the app:
 - **Mood** -> on a scale of **0 - 10**
-- **Anxiety** -> on a scale of **0 - 15**
+- **Anxiety** -> on a scale of **0 - 21**
 - **Depression** -> on a scale of **0 - 27**
 - **Sleep**
   - **Sleep Quality** -> on a scale of **0 - 10**

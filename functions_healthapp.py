@@ -2,6 +2,8 @@ import sqlite3
 from datetime import datetime
 from random import randint
 
+image_paths = ["Images/checkmark.png", "Images/alert_yellow.png", "Images/alert_red.png"]
+
 # --------- User creatiom ---------
 def insert_user(user_fn, user_ln, user_gender, user_age, user_email):
     sql_conn = sqlite3.connect("healthapp.db")
@@ -185,6 +187,25 @@ def get_user_trackables(userID):
             conn.close()
     return user_trackables
 
+# Gets the trackable name from the trackable ID and returns it in a tuple in a list
+def get_trackable_name(trackableID):
+    conn = None
+    trackable_name = []
+    try:
+        conn = sqlite3.connect("healthapp.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name from trackables WHERE trackableID = ?", (trackableID, ))
+        trackable_name = cursor.fetchall()
+
+    except Exception as e:
+        print("Error in selecting user trackables:", e)
+
+    finally:
+        if conn:
+            conn.close()
+    return trackable_name
+
 def get_values(user_trackableID):
     values = []
     try:
@@ -334,3 +355,24 @@ def delete_user(userID):
     except sqlite3.Error as e:
         print("Database error:", e)
         raise
+
+# Functions to determine what image to show
+def select_image_path(values):
+    if len(values) > 4:
+        median = 0
+        for item in values:
+            median += item
+        median /= len(values)
+        if median < 0.33:
+            return image_paths[0]
+        if median < 0.66:
+            return image_paths[1]
+        else:
+            return image_paths[2]
+    else:
+        if not values:
+            return ""
+        elif values[-1] == 0:
+            return image_paths[0]
+        else:
+            return image_paths[2]

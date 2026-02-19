@@ -18,8 +18,8 @@ from matplotlib.backends.backend_qt5agg import (
 )
 from matplotlib.figure import Figure
 
-from refactor.functions_healthapp import *
-from refactor.functions_tests import *
+from functions_healthapp import *
+from functions_tests import *
 import os.path
 
 # ---------- Create Databse if needed -----------
@@ -1932,7 +1932,7 @@ class MainWindow(QMainWindow):
 
                 plot_anxiety = MatplotlibWidget()
                 plot_anxiety.set_yaxis(21)
-                plot_anxiety.plot_dates_smooth(anxiety_date, anxiety_value, color='orange', marker=None, linestyle='-', linewidth=2)
+                plot_anxiety.plot_dates_smooth(anxiety_date, anxiety_value, color='blue', marker=None, linestyle='-', linewidth=2)
                 plot_anxiety.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_anxiety)
@@ -1947,7 +1947,7 @@ class MainWindow(QMainWindow):
 
                 plot_mood = MatplotlibWidget()
                 plot_mood.set_yaxis(10)
-                plot_mood.plot_dates_smooth(mood_date, mood_value, color='darkslategrey', marker=None, linestyle='-', linewidth=2)
+                plot_mood.plot_dates_smooth(mood_date, mood_value, color='blue', marker=None, linestyle='-', linewidth=2)
                 plot_mood.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_mood)
@@ -1963,7 +1963,7 @@ class MainWindow(QMainWindow):
 
                 plot_sleep_q = MatplotlibWidget()
                 plot_sleep_q.set_yaxis(10)
-                plot_sleep_q.plot_dates_smooth(sleep_q_date, sleep_q_value, color='darkviolet', marker=None, linestyle='-', linewidth=2)
+                plot_sleep_q.plot_dates_smooth(sleep_q_date, sleep_q_value, color='blue', marker=None, linestyle='-', linewidth=2)
                 #self.create_dock("Sleep Data", [plot_sleep], side="left")
 
             if item[1] == 4:
@@ -1974,7 +1974,7 @@ class MainWindow(QMainWindow):
                     sleep_l_date.append(item2[0])
                     sleep_l_value.append(item2[1])
 
-                plot_sleep_q.plot_dates_smooth(sleep_l_date, sleep_l_value, color='crimson', marker=None, linestyle='-', linewidth=2)
+                plot_sleep_q.plot_dates_smooth(sleep_l_date, sleep_l_value, color='blue', marker=None, linestyle='-', linewidth=2)
                 plot_sleep_q.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_sleep_q)
@@ -1991,7 +1991,7 @@ class MainWindow(QMainWindow):
                     self_harm_value.append(item2[1])
 
                 plot_self_harm = UserSelfHarm()
-                plot_self_harm.set_overlay("Images/checkmark.png", width=300, height=300, corner="bottom-left")
+                plot_self_harm.set_overlay(select_image_path(self_harm_value), width=300, height=300, corner="bottom-left")
                 #plot_self_harm.setFixedSize(250, 250)
                 #plot_self_harm.setStyleSheet("QLabel { background-image: url(checkmark.png); background-size: cover; }")
 
@@ -2007,7 +2007,7 @@ class MainWindow(QMainWindow):
 
                 plot_alcohol_abuse = MatplotlibWidget()
                 plot_alcohol_abuse.set_yaxis(12)
-                plot_alcohol_abuse.plot_dates_smooth(alcohol_abuse_date, alcohol_abuse_value, color='forestgreen', marker=None, linestyle='-', linewidth=2)
+                plot_alcohol_abuse.plot_dates_smooth(alcohol_abuse_date, alcohol_abuse_value, color='blue', marker=None, linestyle='-', linewidth=2)
                 plot_alcohol_abuse.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_alcohol_abuse)
@@ -2026,16 +2026,8 @@ class MainWindow(QMainWindow):
                 #plot_drug_abuse.setFixedSize(250, 250)
                 plot_drug_abuse = UserSelfHarm()
 
-                value_testing1 = 3
-                image_selection_drug_abuse = ""
-                if value_testing1 == 1:
-                    image_selection_drug_abuse = "Images/checkmark.png"
-                elif value_testing1 == 2:
-                    image_selection_drug_abuse = "Images/alert_yellow.png"
-                else:
-                    image_selection_drug_abuse = "Images/alert_red.png"
                 #plot_drug_abuse.setStyleSheet("QLabel { background-image: url(" + image_selection_drug_abuse + "); background-size: cover; }")
-                plot_drug_abuse.set_overlay(image_selection_drug_abuse, width=300, height=300, corner="bottom-left")
+                plot_drug_abuse.set_overlay(select_image_path(drug_abuse_value), width=300, height=300, corner="bottom-left")
 
                 self.create_dock("Drug Abuse Data", [plot_drug_abuse], side="right", max_width=300, max_height=300)
 
@@ -2052,7 +2044,7 @@ class MainWindow(QMainWindow):
                 plot_eating_habits.plot_dates_smooth(
                     eating_habits_date,
                     eating_habits_value,
-                    color='navy',
+                    color='blue',
                     marker=None,
                     linestyle='-',
                     linewidth=2
@@ -2075,7 +2067,7 @@ class MainWindow(QMainWindow):
                 plot_depression.plot_dates_smooth(
                     depression_date,
                     depression_value,
-                    color='red',
+                    color='blue',
                     marker=None,
                     linestyle='-',
                     linewidth=2
