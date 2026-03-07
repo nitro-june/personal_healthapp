@@ -1,4 +1,6 @@
 import sys
+import shutil
+import os.path
 import matplotlib
 matplotlib.use('Qt5Agg')
 
@@ -7,20 +9,18 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import sqlite3
-from scipy.interpolate import make_interp_spline
+from scipy.interpolate import make_interp_spline, PchipInterpolator
 import matplotlib.dates as mdates
 import numpy as np
 from datetime import datetime
-
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg,
     NavigationToolbar2QT as NavigationToolbar
 )
 from matplotlib.figure import Figure
-
 from functions_healthapp import *
 from functions_tests import *
-import os.path
+from create_report import generate_report
 
 # ---------- Create Databse if needed -----------
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -807,14 +807,14 @@ class TrackEatingHabitsWindow(QDialog):
         content_widget.setStyleSheet(_style)
 
         eat26_label_explanation = QLabel("Explanation")
-        eat26_label_q1 = QLabel("I am terrified about being overweight.")
+        eat26_label_q1 = QLabel("I am terrified about being overweight or underweight.")
         eat26_label_q2 = QLabel("I avoid eating when I am hungry.")
         eat26_label_q3 = QLabel("I find myself preoccupied with food.")
         eat26_label_q4 = QLabel("I have gone on eating binges where I felt that I may not be able to stop.")
         eat26_label_q5 = QLabel("I have cut my food into small pieces.")
-        eat26_label_q6 = QLabel("I am aware of the calorie content of foods that I eat.")
-        eat26_label_q7 = QLabel("I particularly avoid food with a high carbohydrates content. (i.e. bread, rice, potatoes, etc.)")
-        eat26_label_q8 = QLabel("I feel that others would prefer if I ate more.")
+        eat26_label_q6 = QLabel("I feel that others pressure me to eat.")
+        eat26_label_q7 = QLabel("I have engaged in secret eating. (eating in private / secret)")
+        eat26_label_q8 = QLabel("I feel extremely guilty about eating.")
         eat26_label_q9 = QLabel("I vomit after I have eaten.")
         eat26_label_q10 = QLabel("I feel extremely guilty after eating.")
         eat26_label_q11 = QLabel("I am preoccupied with a desire to be thinner.")
@@ -1242,25 +1242,54 @@ class MatplotlibWidget(QWidget):
 
         self.overlay_label.setGeometry(x, y, lbl_width, lbl_height)
 
-
     def plot_dates_smooth(self, dates_str, y_values, color='blue', marker=None, linestyle='-', **kwargs):
+        if not dates_str or not y_values:
+            return  # prevent empty input
+
+        # Parse dates and sort
         dates = [datetime.strptime(d, "%Y-%m-%d") for d in dates_str]
         x = mdates.date2num(dates)
         y = np.array(y_values)
 
-        if len(x) > 3:
-            x_smooth = np.linspace(x.min(), x.max(), 300)
-            spline = make_interp_spline(x, y, k=3)
-            y_smooth = spline(x_smooth)
-            self.axes.plot(mdates.num2date(x_smooth), y_smooth, color=color, marker=marker, linestyle=linestyle, **kwargs)
-        else:
-            self.axes.plot(mdates.num2date(x), y, color=color, marker=marker, linestyle=linestyle, **kwargs)
+        # Ensure strictly increasing x
+        sorted_idx = np.argsort(x)
+        x = x[sorted_idx]
+        y = y[sorted_idx]
 
+        self.axes.cla()  # clear old plots
+
+        try:
+            if len(x) > 5:
+                x_smooth = np.linspace(x.min(), x.max(), 200)
+                spline = make_interp_spline(x, y, k=2)
+                y_smooth = np.clip(spline(x_smooth), y.min(), y.max())
+                self.axes.plot(mdates.num2date(x_smooth), y_smooth, color=color, marker=marker, linestyle=linestyle,
+                               **kwargs)
+                self.axes.plot(mdates.num2date(x), y, 'o', color=color)
+            elif 3 <= len(x) <= 5:
+                x_smooth = np.linspace(x.min(), x.max(), 50)
+                pchip = PchipInterpolator(x, y)
+                y_smooth = np.clip(pchip(x_smooth), y.min(), y.max())
+                self.axes.plot(mdates.num2date(x_smooth), y_smooth, color=color, marker=marker, linestyle=linestyle,
+                               **kwargs)
+                self.axes.plot(mdates.num2date(x), y, 'o', color=color)
+            else:
+                # less than 3 points: just plot raw points
+                self.axes.plot(mdates.num2date(x), y, color=color, marker='o', linestyle=linestyle, **kwargs)
+        except Exception as e:
+            print("Plotting error:", e)
+            # fallback: raw points
+            self.axes.plot(mdates.num2date(x), y, color=color, marker='o', linestyle=linestyle)
+
+        # Format axes
         self.axes.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
         self.axes.xaxis.set_major_locator(mdates.AutoDateLocator())
         self.figure.autofmt_xdate()
         self.axes.grid(True)
-        self.canvas.draw()
+
+        # Only draw if canvas exists
+        if hasattr(self, 'canvas') and self.canvas:
+            self.canvas.draw()
 
     def clear(self):
         self.axes.cla()
@@ -1823,7 +1852,7 @@ class MainWindow(QMainWindow):
         # Window Sizes in 16:9
         self.setMinimumSize(QSize(1200, 675))
         self.setMaximumSize(QSize(geometry.width(), geometry.height()))
-        self.resize(1600, 900)
+        self.resize(1200, 675)
 
         self.setStyleSheet(_style)
 
@@ -1863,7 +1892,11 @@ class MainWindow(QMainWindow):
         # Application actions
         application_menu = menubar.addMenu("Actions")
         change_style_action = application_menu.addAction("Change Style")
-        exit_application_action = application_menu.addAction("Exit")
+        select_pfp_action = application_menu.addAction("Select Profile Image")
+        select_pfp_action.triggered.connect(self.choose_and_copy_user_pfp)
+        create_report_action = application_menu.addAction("Create Report")
+        create_report_action.triggered.connect(self.generate_report)
+        exit_application_action = application_menu.addAction("Exit Application")
         exit_application_action.triggered.connect(self.close)
 
         # -------------------- Scrolling Label --------------------
@@ -1931,8 +1964,8 @@ class MainWindow(QMainWindow):
                     anxiety_value.append(v[1])
 
                 plot_anxiety = MatplotlibWidget()
-                plot_anxiety.set_yaxis(21)
                 plot_anxiety.plot_dates_smooth(anxiety_date, anxiety_value, color='blue', marker=None, linestyle='-', linewidth=2)
+                plot_anxiety.set_yaxis(21)
                 plot_anxiety.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_anxiety)
@@ -1946,8 +1979,8 @@ class MainWindow(QMainWindow):
                     mood_value.append(item2[1])
 
                 plot_mood = MatplotlibWidget()
-                plot_mood.set_yaxis(10)
                 plot_mood.plot_dates_smooth(mood_date, mood_value, color='blue', marker=None, linestyle='-', linewidth=2)
+                plot_mood.set_yaxis(10)
                 plot_mood.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_mood)
@@ -1975,12 +2008,13 @@ class MainWindow(QMainWindow):
                     sleep_l_value.append(item2[1])
 
                 plot_sleep_q.plot_dates_smooth(sleep_l_date, sleep_l_value, color='blue', marker=None, linestyle='-', linewidth=2)
+                plot_sleep_q.set_yaxis(10)
                 plot_sleep_q.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_sleep_q)
                 widgets_tab_names.append("Sleep Data")
 
-
+            """
             if item[1] == 5:
                 self_harm_value = []
                 self_harm_date = []
@@ -1996,6 +2030,7 @@ class MainWindow(QMainWindow):
                 #plot_self_harm.setStyleSheet("QLabel { background-image: url(checkmark.png); background-size: cover; }")
 
                 self.create_dock("Self Harm Data", [plot_self_harm], side="right", max_width=300, max_height=300)
+            """
 
             if item[1] == 6:
                 alcohol_abuse_date, alcohol_abuse_value = [], []
@@ -2006,13 +2041,14 @@ class MainWindow(QMainWindow):
                     alcohol_abuse_value.append(item2[1])
 
                 plot_alcohol_abuse = MatplotlibWidget()
-                plot_alcohol_abuse.set_yaxis(12)
                 plot_alcohol_abuse.plot_dates_smooth(alcohol_abuse_date, alcohol_abuse_value, color='blue', marker=None, linestyle='-', linewidth=2)
+                plot_alcohol_abuse.set_yaxis(12)
                 plot_alcohol_abuse.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_alcohol_abuse)
                 widgets_tab_names.append("Alcohol Abuse Data")
 
+            """
             if item[1] == 7:
                 drug_abuse_value = []
                 drug_abuse_date = []
@@ -2030,6 +2066,7 @@ class MainWindow(QMainWindow):
                 plot_drug_abuse.set_overlay(select_image_path(drug_abuse_value), width=300, height=300, corner="bottom-left")
 
                 self.create_dock("Drug Abuse Data", [plot_drug_abuse], side="right", max_width=300, max_height=300)
+            """
 
             if item[1] == 8:  # Eating Habits
                 eating_habits_date, eating_habits_value = [], []
@@ -2040,7 +2077,6 @@ class MainWindow(QMainWindow):
                     eating_habits_value.append(item2[1])
 
                 plot_eating_habits = MatplotlibWidget()
-                plot_eating_habits.set_yaxis(78, step=5)
                 plot_eating_habits.plot_dates_smooth(
                     eating_habits_date,
                     eating_habits_value,
@@ -2049,6 +2085,7 @@ class MainWindow(QMainWindow):
                     linestyle='-',
                     linewidth=2
                 )
+                plot_eating_habits.set_yaxis(78, step=5)
                 plot_eating_habits.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_eating_habits)
@@ -2063,7 +2100,6 @@ class MainWindow(QMainWindow):
                     depression_value.append(item2[1])
 
                 plot_depression = MatplotlibWidget()
-                plot_depression.set_yaxis(27)
                 plot_depression.plot_dates_smooth(
                     depression_date,
                     depression_value,
@@ -2072,6 +2108,7 @@ class MainWindow(QMainWindow):
                     linestyle='-',
                     linewidth=2
                 )
+                plot_depression.set_yaxis(27)
                 plot_depression.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_depression)
@@ -2157,6 +2194,37 @@ class MainWindow(QMainWindow):
             self.docks_tabbed.append(dock)
 
         return first_dock
+
+    def generate_report(self):
+
+        if self.user_ID is None:
+            QMessageBox.warning(self, "Error", "No user logged in.")
+            return
+
+        generate_report(self.user_ID)
+
+    def choose_and_copy_user_pfp(self):
+        # Ask the user to select a file
+        file_path, _ = QFileDialog.getOpenFileName(
+            None, "Select Profile Picture", "", "Images (*.png *.jpg *.jpeg *.bmp)"
+        )
+
+        if not file_path:
+            print("No file selected")
+            return None
+
+        # Target folder relative to the script
+        target_folder = os.path.join(os.path.dirname(__file__), "Images")
+        os.makedirs(target_folder, exist_ok=True)
+
+        # Destination path
+        dest_file = os.path.join(target_folder, "user_pfp" + os.path.splitext(file_path)[1])
+
+        # Copy the selected file
+        shutil.copy(file_path, dest_file)
+
+        print(f"File copied to {dest_file}")
+        return dest_file
 
     # ---------- Methods to open classes/widgets used in action bar of main menu ----------
     def create_delete_user(self):

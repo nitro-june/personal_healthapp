@@ -18,7 +18,7 @@ The mental-health tracker is mostly built in python and uses sqlite to localy sa
 
 The UI is mostly built using PyQt5 and Matplotlib.
 
-The print to PDF feature for the trackables uses ... (Build this with quick description or integration of an LLM or something similar?) -> basically reads out the scores. writes a short description based on medical "diagnosis and screenings" and lists the graphs of how the user feels.
+The print to PDF feature for the tracked data uses Jinja to build an html page with Python code, which gets printed to a PDF. (Build this with quick description or integration of an LLM or something similar?) -> basically reads out the scores. writes a short description based on medical "diagnosis and screenings" and lists the graphs of how the user feels.
 
 --- 
 

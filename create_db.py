@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS trackables (
     name TEXT,
     description TEXT,
     min_value REAL,
-    max_value REAL
+    max_value REAL,
+    tick_count INTEGER,
 );
 """)
 

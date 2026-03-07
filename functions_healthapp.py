@@ -204,7 +204,44 @@ def get_trackable_name(trackableID):
     finally:
         if conn:
             conn.close()
-    return trackable_name
+    return trackable_name[0][0]
+
+# Get the trackable max y
+def get_trackable_maxy(trackableID):
+    conn = None
+    trackable_name = []
+    try:
+        conn = sqlite3.connect("healthapp.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT max_value from trackables WHERE trackableID = ?", (trackableID, ))
+        trackable_maxy = cursor.fetchall()
+
+    except Exception as e:
+        print("Error in selecting user trackables:", e)
+
+    finally:
+        if conn:
+            conn.close()
+    return trackable_maxy[0][0]
+
+def get_trackable_tick(trackableID):
+    conn = None
+    trackable_tick = []
+    try:
+        conn = sqlite3.connect("healthapp.db")
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT tick_count from trackables WHERE trackableID = ?", (trackableID, ))
+        trackable_tick = cursor.fetchall()
+
+    except Exception as e:
+        print("Error in selecting user trackables:", e)
+
+    finally:
+        if conn:
+            conn.close()
+    return trackable_tick[0][0]
 
 def get_values(user_trackableID):
     values = []

@@ -10,7 +10,7 @@
   <body>
 
     <header class="w3-container w3-blue-grey w3-xlarge" style="display: flex; align-items: center; width: 100%;">
-        <span>Healthapp Summary - {{ name }}</span>
+        <span>Healthapp Summary - Test User</span>
         <img src="Images/logo.jpg" style="height:35px; margin-left: auto; display: block;">
     </header>
 
@@ -24,54 +24,116 @@
     <div class="personal-card">
         <img src="Images/user_pfp.jpg" alt="Profile Picture" class="profile-pic">
         <div class="card-content">
-            <h3>{{ name }}</h3>
-            <p><strong>Age:</strong> {{ user_info[3] }}</p>
-            <p><strong>Gender:</strong> {{ user_info[2] }}</p>
-            <p><strong>E-Mail:</strong> {{ user_info[6] }}</p>
-            <p><strong>Started Tracking:</strong> {{ user_info[4] }}</p>
+            <h3>Test User</h3>
+            <p><strong>Age:</strong> 42</p>
+            <p><strong>Gender:</strong> -</p>
+            <p><strong>E-Mail:</strong> test@mail</p>
+            <p><strong>Started Tracking:</strong> 2026-01-20</p>
         </div>
     </div>
 
     <div class="w3-container" style="margin-top:20px">
-        {% for item in trackables %}
+        
             <div>
                 <br>
-                <h5>Subject: {{ item }}</h5>
+                <h5>Subject: Anxiety</h5>
                 <hr>
-                {% if item == "Mood" %}
+                
+                    <p>The information presented here is derived from the GAD-7<sup>1</sup> screening instrument. Although originally developed for generalized anxiety disorder, the GAD-7 demonstrates reasonable validity for detecting other common anxiety disorders as well.</p>
+                    <img src="temp_img/AnxietyPlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Mood</h5>
+                <hr>
+                
                     <p>This assessment is based on a general mood scale ranging from 0 to 10, where 0 indicates the lowest mood and 10 indicates the most positive mood.</p>
                     <p>Explanation of recorded data.</p>
                     <img src="temp_img/MoodPlot.png" width="450">
                     <p>Recommendation of action.</p>
-                {% elif item == "Anxiety" %}
-                    <p>The information presented here is derived from the GAD-7<sup>1</sup> screening instrument. Although originally developed for generalized anxiety disorder, the GAD-7 demonstrates reasonable validity for detecting other common anxiety disorders as well.</p>
-                    <img src="temp_img/AnxietyPlot.png" width="450">
-                {% elif item == "Depression" %}
-                    <p>This information is derived from the PHQ-9<sup>1</sup> screening tool, which is widely used for screening, diagnosing, monitoring, and assessing the severity of depressive symptoms.</p>
-                    <img src="temp_img/DepressionPlot.png" width="450">
-                {% elif item == "Sleep Quality" %}
-                    <p>The data presented reflects a self-reported measure of sleep quality on a 0 to 10 scale, with 0 representing very poor sleep and 10 representing excellent sleep quality.</p>
-                    <img src="temp_img/Sleep%20QualityPlot.png" width="450">
-                {% elif item == "Sleep Length" %}
-                    <p>This measure captures self-reported sleep duration on a scale of 0 to 10, where lower scores indicate shorter sleep periods and higher scores indicate longer sleep periods.</p>
-                    <img src="temp_img/Sleep%20LengthPlot.png" width="450">
-                {% elif item == "Self Harm" %}
-                    <p>The information is based on a straightforward questionnaire indicating whether self-harm behaviors occurred or were absent during the assessed period.</p>
-                {% elif item == "Alcohol Abuse" %}
-                    <p>This summary is informed by the AUDIT-C<sup>1</sup> (Alcohol Use Disorder Identification Test), a brief screening tool designed to identify patterns of alcohol misuse.</p>
-                    <img src="temp_img/Alcohol%20AbusePlot.png" width="450">
-                {% elif item == "Drug Abuse" %}
-                    <p>Further assessment is recommended to evaluate substance use patterns and potential risks.</p>
-                    <img src="temp_img/Drug%20AbusePlot.png" width="450">
-                {% elif item == "Eating Habits" %}
-                    <p>The information is based on a shortened version of the EAT-26<sup>1</sup>, a standardized self-report instrument for assessing disordered eating behaviors.</p>
-                    <img src="temp_img/Eating%20HabitsPlot.png" width="450">
-                {% else %}
-                    <p>Welcome.</p>
-                {% endif %}
+                
                 <hr class="split-line">
             </div>
-        {% endfor %}
+        
+            <div>
+                <br>
+                <h5>Subject: Sleep Quality</h5>
+                <hr>
+                
+                    <p>The data presented reflects a self-reported measure of sleep quality on a 0 to 10 scale, with 0 representing very poor sleep and 10 representing excellent sleep quality.</p>
+                    <img src="temp_img/Sleep%20QualityPlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Sleep Length</h5>
+                <hr>
+                
+                    <p>This measure captures self-reported sleep duration on a scale of 0 to 10, where lower scores indicate shorter sleep periods and higher scores indicate longer sleep periods.</p>
+                    <img src="temp_img/Sleep%20LengthPlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Self Harm</h5>
+                <hr>
+                
+                    <p>The information is based on a straightforward questionnaire indicating whether self-harm behaviors occurred or were absent during the assessed period.</p>
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Alcohol Abuse</h5>
+                <hr>
+                
+                    <p>This summary is informed by the AUDIT-C<sup>1</sup> (Alcohol Use Disorder Identification Test), a brief screening tool designed to identify patterns of alcohol misuse.</p>
+                    <img src="temp_img/Alcohol%20AbusePlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Drug Abuse</h5>
+                <hr>
+                
+                    <p>Further assessment is recommended to evaluate substance use patterns and potential risks.</p>
+                    <img src="temp_img/Drug%20AbusePlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Eating Habits</h5>
+                <hr>
+                
+                    <p>The information is based on a shortened version of the EAT-26<sup>1</sup>, a standardized self-report instrument for assessing disordered eating behaviors.</p>
+                    <img src="temp_img/Eating%20HabitsPlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
+            <div>
+                <br>
+                <h5>Subject: Depression</h5>
+                <hr>
+                
+                    <p>This information is derived from the PHQ-9<sup>1</sup> screening tool, which is widely used for screening, diagnosing, monitoring, and assessing the severity of depressive symptoms.</p>
+                    <img src="temp_img/DepressionPlot.png" width="450">
+                
+                <hr class="split-line">
+            </div>
+        
     </div>
   </body>
 
