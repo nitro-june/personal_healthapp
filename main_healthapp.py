@@ -1,23 +1,24 @@
 import sys
+import os
 import shutil
-import os.path
+from datetime import datetime
+
+# Third-party
 import matplotlib
 matplotlib.use('Qt5Agg')
-
-import PyQt5 as PyQt
+import numpy as np
+import matplotlib.dates as mdates
+from scipy.interpolate import make_interp_spline, PchipInterpolator
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg,
+    NavigationToolbar2QT as NavigationToolbar,
+)
+from matplotlib.figure import Figure
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-import sqlite3
-from scipy.interpolate import make_interp_spline, PchipInterpolator
-import matplotlib.dates as mdates
-import numpy as np
-from datetime import datetime
-from matplotlib.backends.backend_qt5agg import (
-    FigureCanvasQTAgg,
-    NavigationToolbar2QT as NavigationToolbar
-)
-from matplotlib.figure import Figure
+
+# Local
 from functions_healthapp import *
 from functions_tests import *
 from create_report import generate_report
@@ -79,40 +80,18 @@ class TrackMoodWindow(QDialog):
 
     def submit_mood(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             mood_value = self.mood_combobox.currentIndex()
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 2 AND userID = ?",
-                (self.user_ID,)
-            )
-
-            result = sql_cursor.fetchone()
-            if result is None:
+            trackable_id = get_user_trackable_id(self.user_ID, 2)
+            if not trackable_id:
                 print("No trackable found for this user.")
                 return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value) "
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, mood_value)
-            )
-
-            sql_conn.commit()
+            add_user_entry(trackable_id, mood_value, date_now)
 
         except Exception as e:
             print("Error submitting mood:", e)
-
-        finally:
-            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -210,40 +189,18 @@ class TrackAnxietyWindow(QDialog):
 
     def submit_anxiety(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             anxiety_value = gad7_scoring(self.gad7_combobox_list)
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 1 AND userID = ?",
-                (self.user_ID,)
-            )
-
-            result = sql_cursor.fetchone()
-            if result is None:
+            trackable_id = get_user_trackable_id(self.user_ID, 1)
+            if not trackable_id:
                 print("No trackable found for this user.")
                 return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value) "
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, anxiety_value)
-            )
-
-            sql_conn.commit()
+            add_user_entry(trackable_id, anxiety_value, date_now)
 
         except Exception as e:
             print("Error submitting mood:", e)
-
-        finally:
-            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -352,49 +309,22 @@ class TrackDepressionWindow(QDialog):
 
     def submit_depression(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             depression_value = phq9_scoring(self.phq9_combobox_list)
             q9_bool = phq9_q9(self.phq9_combobox_list[8])
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 9 AND userID = ?",
-                (self.user_ID,)
-            )
-
-            result = sql_cursor.fetchone()
-            if result is None:
+            trackable_id = get_user_trackable_id(self.user_ID, 9)
+            if not trackable_id:
                 print("No trackable found for this user.")
                 return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, depression_value)
-            )
+            add_user_entry(trackable_id, depression_value, date_now)
 
             if q9_bool:
-                sql_cursor.execute(
-                "INSERT INTO bool_user_trackables "
-                "(user_trackablesID, bool_value)"
-                "VALUES (?, ?)",
-                (trackable_id, q9_bool)
-                )
-
-            sql_conn.commit()
+                add_bool_user_entry(trackable_id, q9_bool)
 
         except Exception as e:
             print("Error submitting depression value:", e)
-
-        finally:
-            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -458,50 +388,25 @@ class TrackSleepWindow(QDialog):
 
     def submit_sleep(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             sleep_quality_value = self.sleep_quality_combobox.currentIndex()
             sleep_length_value = self.sleep_length_combobox.currentIndex()
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 3 OR trackableID = 4 AND userID = ?"
-                "ORDER BY trackableID ASC",
-                (self.user_ID,)
-            )
+            trackable_id_quality = get_user_trackable_id(self.user_ID, 3)
+            trackable_id_length = get_user_trackable_id(self.user_ID, 4)
 
-            result = sql_cursor.fetchall()
-            if result is None:
-                print("No trackable found for this user.")
+            if not trackable_id_quality and not trackable_id_length:
+                QMessageBox.warning(self, "Error", "Sleep trackables not set up for this user.")
                 return
 
-            trackable_id_quality = result[0][0]
-            trackable_id_length = result[1][0]
+            if trackable_id_quality:
+                add_user_entry(trackable_id_quality, sleep_quality_value, date_now)
 
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id_quality, date_now, sleep_quality_value)
-            )
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id_length, date_now, sleep_length_value)
-            )
-
-            sql_conn.commit()
+            if trackable_id_length:
+                add_user_entry(trackable_id_length, sleep_length_value, date_now)
 
         except Exception as e:
             print("Error submitting sleep values:", e)
-
-        finally:
-            sql_conn.close()
 
 class TrackSelfHarmWindow(QDialog):
     def __init__(self, user_ID, parent=None):
@@ -538,41 +443,18 @@ class TrackSelfHarmWindow(QDialog):
 
     def submit_self_harm(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             self_harm_bool = self.self_harm_combobox.currentIndex()
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 5 AND userID = ?"
-                "ORDER BY trackableID ASC",
-                (self.user_ID,)
-            )
-
-            result = sql_cursor.fetchone()
-            if result is None:
+            trackable_id = get_user_trackable_id(self.user_ID, 5)
+            if not trackable_id:
                 print("No trackable found for this user.")
                 return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, self_harm_bool)
-            )
-
-            sql_conn.commit()
+            add_user_entry(trackable_id, self_harm_bool, date_now)
 
         except Exception as e:
             print("Error submitting sleep values:", e)
-
-        finally:
-            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -646,41 +528,18 @@ class TrackAlcoholAbuseWindow(QDialog):
 
     def submit_alcohol_abuse(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             alcohol_abuse_value = auditc_scoring(self.auditc_combobox_list)
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 6 AND userID = ?"
-                "ORDER BY trackableID ASC",
-                (self.user_ID,)
-            )
-
-            result = sql_cursor.fetchone()
-            if result is None:
+            trackable_id = get_user_trackable_id(self.user_ID, 6)
+            if not trackable_id:
                 print("No trackable found for this user.")
                 return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, alcohol_abuse_value)
-            )
-
-            sql_conn.commit()
+            add_user_entry(trackable_id, alcohol_abuse_value, date_now)
 
         except Exception as e:
             print("Error submitting alcohol abuse values:", e)
-
-        finally:
-            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -733,9 +592,6 @@ class TrackDrugAbuseWindow(QDialog):
 
     def submit_drug_abuse(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
             drug_abuse_bool_q1 = self.drug_abuse_combobox_q1.currentIndex()
             drug_abuse_bool_q2 = self.drug_abuse_combobox_q2.currentIndex()
@@ -744,35 +600,15 @@ class TrackDrugAbuseWindow(QDialog):
             if drug_abuse_bool_q1 == 1 or drug_abuse_bool_q2 == 1:
                 drug_abuse_bool = 1
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 7 AND userID = ?"
-                "ORDER BY trackableID ASC",
-                (self.user_ID,)
-            )
-
-            result = sql_cursor.fetchone()
-            if result is None:
+            trackable_id = get_user_trackable_id(self.user_ID, 7)
+            if not trackable_id:
                 print("No trackable found for this user.")
                 return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, drug_abuse_bool)
-            )
-
-            sql_conn.commit()
+            add_user_entry(trackable_id, drug_abuse_bool, date_now)
 
         except Exception as e:
             print("Error submitting drug abuse value:", e)
-
-        finally:
-            sql_conn.close()
 
     def center(self):
         screen = QApplication.primaryScreen()
@@ -894,8 +730,7 @@ class TrackEatingHabitsWindow(QDialog):
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(content_widget)
-
-        scroll.viewport().setStyleSheet("background: transparent;")
+        scroll.setObjectName("EatingScroll")
 
         layout.addWidget(scroll)
 
@@ -911,47 +746,24 @@ class TrackEatingHabitsWindow(QDialog):
 
     def submit_eating_habits(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             date_now = datetime.now().date().isoformat()
 
             eating_habits_value = eat26_scoring(self.eat26_combobox_list)
 
-            sql_cursor.execute(
-                "SELECT user_trackablesID "
-                "FROM user_trackables "
-                "WHERE trackableID = 8 AND userID = ?"
-                "ORDER BY trackableID ASC",
-                (self.user_ID,)
-            )
+            trackable_id = get_user_trackable_id(self.user_ID, 8)
 
-            result = sql_cursor.fetchone()
-
-            if result is None:
-                # Show a warning message box
+            if trackable_id is None:
                 QMessageBox.warning(
-                    self,  # parent window
-                    "User is currently not tracking eating habits.",  # title
+                    self,
+                    "User is currently not tracking eating habits.",
                 )
-                return  # keep the dialog open
+                return
 
-            trackable_id = result[0]
-
-            sql_cursor.execute(
-                "INSERT INTO user_trackables_entries "
-                "(user_trackablesID, entry_date, value)"
-                "VALUES (?, ?, ?)",
-                (trackable_id, date_now, eating_habits_value)
-            )
-
-            sql_conn.commit()
+            add_user_entry(trackable_id, eating_habits_value, date_now)
 
         except Exception as e:
             print("Error submitting eating habits value:", e)
-
-        finally:
-            sql_conn.close()
+        
 
 
     def center(self):
@@ -1545,19 +1357,8 @@ class CreateUserWindow(QDialog):
         titel1 = QLabel("Please enter your user information:")
         titel2 = QLabel("Please select which items you would like to track:")
 
-        titel1.setStyleSheet("""
-            font-size: 16pt;
-            font-weight: bold;
-            font-family: "Times New Roman", Times, serif;
-            margin-bottom: 10px;
-        """)
-        titel2.setStyleSheet("""
-            font-size: 16pt;
-            font-weight: bold;
-            font-family: "Times New Roman", Times, serif;
-            margin-top: 30px;
-            margin-bottom: 10px;
-        """)
+        titel1.setObjectName("CreateUserTitle")
+        titel2.setObjectName("CreateUserSubtitle")
 
         layout.addWidget(titel1, 0, 0,  alignment = Qt.AlignLeft)
         layout.addWidget(titel2, 6, 0, alignment = Qt.AlignLeft)
@@ -1610,17 +1411,7 @@ class CreateUserWindow(QDialog):
         # Creating send button and setting style
         create_user_button = QPushButton("Create User")
         create_user_button.clicked.connect(self.on_create_clicked)
-
-        create_user_button.setStyleSheet("""
-            	border-style: solid;
-	            border-color: #050a0e;
-	            border-width: 1px;
-	            border-radius: 5px;
-	            color: #d3dae3;
-	            padding: 2px;
-                background-color: #100E19;
-                font-size: 16px;
-        """)
+        create_user_button.setObjectName("CreateUserButton")
 
         layout.addWidget(create_user_button, 16, 1, alignment = Qt.AlignRight)
 
@@ -1653,11 +1444,10 @@ class CreateUserWindow(QDialog):
             QMessageBox.critical(self, "DB Error", f"Failed to insert user: {e}")
             return
 
-        sql_conn = sqlite3.connect("healthapp.db")
-        sql_cursor = sql_conn.cursor()
-        sql_cursor.execute("SELECT userID FROM users WHERE email = ?", (email_input_text,))
-        result = sql_cursor.fetchone()
-        sql_conn.close()
+        result = get_user_id_by_email(email_input_text)
+        # normalize result shape like previous code (tuple) for compatibility
+        if result is not None:
+            result = (result,)
         if result is None:
             QMessageBox.warning(self, "Error", "User was not created correctly.")
             return
@@ -1764,17 +1554,15 @@ class UserIDDialog(QDialog):
     # Method that checks email and returns userID for the main window
     def submit(self):
         try:
-            sql_conn = sqlite3.connect("healthapp.db")
-            sql_cursor = sql_conn.cursor()
-
             email_value = self.input_line.text().strip()
 
-            sql_cursor.execute(
-                "SELECT userID FROM users WHERE LOWER(email) = LOWER(?)",
-                (email_value,)
-            )
-
-            result = sql_cursor.fetchone()
+            with connect_db() as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    "SELECT userID FROM users WHERE LOWER(email) = LOWER(?)",
+                    (email_value,)
+                )
+                result = cur.fetchone()
 
             if result is None:
                 # Show a warning message box
@@ -1792,9 +1580,7 @@ class UserIDDialog(QDialog):
 
         except Exception as e:
             print("Error retrieving userID:", e)
-
-        finally:
-            sql_conn.close()
+        
 
 class DeleteUserID(QDialog):
     def __init__(self, parent=None):
@@ -1892,6 +1678,7 @@ class MainWindow(QMainWindow):
         # Application actions
         application_menu = menubar.addMenu("Actions")
         change_style_action = application_menu.addAction("Change Style")
+        change_style_action.triggered.connect(self.toggle_style)
         select_pfp_action = application_menu.addAction("Select Profile Image")
         select_pfp_action.triggered.connect(self.choose_and_copy_user_pfp)
         create_report_action = application_menu.addAction("Create Report")
@@ -1905,13 +1692,13 @@ class MainWindow(QMainWindow):
         toolbar.setMovable(False)
         toolbar.setFloatable(False)
         toolbar.setAllowedAreas(Qt.TopToolBarArea)
-        toolbar.setStyleSheet("background-color: #1e1d23")
+        toolbar.setObjectName("MainToolBar")
         self.addToolBar(Qt.TopToolBarArea, toolbar)
 
         # Create the scrolling label
         scrolling_label = ScrollingLabel(give_message() + "                 " + give_message())
         scrolling_label.setFixedHeight(30)
-        scrolling_label.setStyleSheet("background: transparent; color: #a9b7c6; font-family: 'Arial'; font-size: 18px; font-weight: bold;")  # adjust color if needed
+        scrolling_label.setObjectName("AppScrollingLabel")
         toolbar.addWidget(scrolling_label)
 
         self.status = self.statusBar()
@@ -1995,9 +1782,12 @@ class MainWindow(QMainWindow):
                     sleep_q_value.append(item2[1])
 
                 plot_sleep_q = MatplotlibWidget()
-                plot_sleep_q.set_yaxis(10)
                 plot_sleep_q.plot_dates_smooth(sleep_q_date, sleep_q_value, color='blue', marker=None, linestyle='-', linewidth=2)
-                #self.create_dock("Sleep Data", [plot_sleep], side="left")
+                plot_sleep_q.set_yaxis(10)
+                plot_sleep_q.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
+
+                tabbed_widgets.append(plot_sleep_q)
+                widgets_tab_names.append("Sleep Quality Data")
 
             if item[1] == 4:
                 sleep_l_date, sleep_l_value = [], []
@@ -2007,12 +1797,13 @@ class MainWindow(QMainWindow):
                     sleep_l_date.append(item2[0])
                     sleep_l_value.append(item2[1])
 
-                plot_sleep_q.plot_dates_smooth(sleep_l_date, sleep_l_value, color='blue', marker=None, linestyle='-', linewidth=2)
-                plot_sleep_q.set_yaxis(10)
-                plot_sleep_q.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
+                plot_sleep_l = MatplotlibWidget()
+                plot_sleep_l.plot_dates_smooth(sleep_l_date, sleep_l_value, color='blue', marker=None, linestyle='-', linewidth=2)
+                plot_sleep_l.set_yaxis(10)
+                plot_sleep_l.set_overlay("Images/forapp1.png", width=230, height=200, corner="bottom-left")
 
-                tabbed_widgets.append(plot_sleep_q)
-                widgets_tab_names.append("Sleep Data")
+                tabbed_widgets.append(plot_sleep_l)
+                widgets_tab_names.append("Sleep Length Data")
 
             """
             if item[1] == 5:
@@ -2203,6 +1994,32 @@ class MainWindow(QMainWindow):
 
         generate_report(self.user_ID)
 
+    def toggle_style(self):
+        """Toggle between dark and light QSS styles at runtime."""
+        global _style
+        try:
+            base = os.path.dirname(__file__)
+            dark_path = os.path.join(base, "MaterialDark.qss")
+            light_path = os.path.join(base, "MaterialLight.qss")
+            current = getattr(self, 'current_style', 'dark')
+            new_path = light_path if current == 'dark' else dark_path
+            with open(new_path, 'r', encoding='utf-8') as f:
+                new_style = f.read()
+
+            # Update module-level _style so newly created dialogs use the new style
+            _style = new_style
+
+            # Apply at application level so existing widgets update
+            app = QApplication.instance()
+            if app:
+                app.setStyleSheet(new_style)
+
+            # Toggle state
+            self.current_style = 'light' if current == 'dark' else 'dark'
+            QMessageBox.information(self, "Style Changed", f"Style switched to {self.current_style} mode.")
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to change style: {e}")
+
     def choose_and_copy_user_pfp(self):
         # Ask the user to select a file
         file_path, _ = QFileDialog.getOpenFileName(
@@ -2212,6 +2029,15 @@ class MainWindow(QMainWindow):
         if not file_path:
             print("No file selected")
             return None
+
+        # Read bytes once and keep them for future SQL BLOB insertion.
+        with open(file_path, "rb") as img_file:
+            self.user_pfp_bytes = img_file.read()
+
+        # Persist raw bytes for debugging/export purposes.
+        img_byte_path = os.path.join(os.path.dirname(__file__), "img_byte.txt")
+        with open(img_byte_path, "wb") as img_out:
+            img_out.write(self.user_pfp_bytes)
 
         # Target folder relative to the script
         target_folder = os.path.join(os.path.dirname(__file__), "Images")

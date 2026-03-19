@@ -3,3 +3,5 @@ healthapp.db
 *.db
 hp_report.html
 *.pdf
+.html
+*_byte.txt

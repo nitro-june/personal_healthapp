@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     age INTEGER,
     created_at TEXT,
     last_login TEXT,
-    email TEXT
+    email TEXT,
+    pfp_image BLOB
 );
 """)
 

@@ -394,3 +394,36 @@ QDockWidget {
 QDockWidget::title {
     background-color: #808080;
 }
+
+/* Create User dialog specific selectors */
+#CreateUserTitle {
+	font-size: 16pt;
+	font-weight: bold;
+	font-family: "Times New Roman", Times, serif;
+	margin-bottom: 10px;
+	color: #a9b7c6;
+}
+
+#CreateUserSubtitle {
+	font-size: 16pt;
+	font-weight: bold;
+	font-family: "Times New Roman", Times, serif;
+	margin-top: 30px;
+	margin-bottom: 10px;
+	color: #a9b7c6;
+}
+
+QPushButton#CreateUserButton {
+	border-style: solid;
+	border-color: #050a0e;
+	border-width: 1px;
+	border-radius: 5px;
+	color: #d3dae3;
+	padding: 2px;
+	background-color: #100E19;
+	font-size: 16px;
+}
+
+QScrollArea#EatingScroll QWidget {
+	background: transparent;
+}

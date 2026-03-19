@@ -157,4 +157,4 @@ def generate_report(user_id):
 
     return filename_report_pdf
 
-generate_report(2)
+# NOTE: remove import-time side effects; call `generate_report()` from the application when needed.

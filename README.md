@@ -18,9 +18,35 @@ The mental-health tracker is mostly built in python and uses sqlite to localy sa
 
 The UI is mostly built using PyQt5 and Matplotlib.
 
-The print to PDF feature for the tracked data uses Jinja to build an html page with Python code, which gets printed to a PDF. (Build this with quick description or integration of an LLM or something similar?) -> basically reads out the scores. writes a short description based on medical "diagnosis and screenings" and lists the graphs of how the user feels.
+The print to PDF feature for the tracked data uses Jinja to build an html page with Python code, which gets printed to a PDF using PDFkit.
 
 --- 
+
+## Requirements
+
+Python Libraries and Frameworks:
+
+**Jinja2** - `pip install Jinja2`
+- Jinja is a fast, expressive and extensible templating engine.
+
+**NumPy** - `pip install numpy`
+- NumPy is a fundamental package for array computing in Python.
+
+**SciPy** - `pip install scipy`
+- SciPy is a fundamental package of algorithms for scientifc computing in Python.
+
+**Matplotlib** - `pip install matplotlib`
+- Placeholder
+
+**PyQt5** - `pip install PyQt5`
+- Qt 
+
+**Webkit** - `pip instal pdfkit`
+- PDFkit for Python is a wrapper for wkhtmltopdf utility to convert HTML to PDF using Webkit.
+
+For PDFKit - special installation instructions.
+
+---
 
 ## Features
 
@@ -48,7 +74,7 @@ The questionaire for **alcohol abuse** is based on the **AUDIT-C** *(Alcohol Use
 
 The questionaire for **"drug abuse"** is based on **TICS** *(Two-Item Conjoint Screen for Alcohol and Other Drug Problems)*.
 
-The questionaire for **eating habits** is based on **EAT-26**, which is the most widely used standardized self-report test for the measure of symptoms and concerns regarding eating disorders.
+The questionaire for **eating habits** is based on **EAT-26**, which is the most widely used standardized self-report test for the measure of symptoms and concerns regarding eating disorders. These questions have been manually adjusted to 8 questions instead of 26 questions, with the intention of reducing the load on the user to complete the survey.
 
 ### Miscellaneous
 
