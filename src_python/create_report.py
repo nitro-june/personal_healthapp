@@ -1,5 +1,5 @@
 from jinja2 import Environment, FileSystemLoader, Template
-import functions_healthapp as hp
+import src_python.functions_healthapp as hp
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -7,6 +7,8 @@ from datetime import datetime
 from scipy.interpolate import make_interp_spline, PchipInterpolator
 import os
 import pdfkit
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Plotting needs to have set axis
 
@@ -91,6 +93,9 @@ def generate_report(user_id):
 
     filename_report_html = f"{user[1]}{user[0]}Report.html"
     filename_report_pdf = f"{user[1]}{user[0]}Report.pdf"
+    report_html_path = os.path.join(PROJECT_ROOT, filename_report_html)
+    report_pdf_path = os.path.join(PROJECT_ROOT, filename_report_pdf)
+    template_path = os.path.join(PROJECT_ROOT, "report_layout.html.jinja")
 
     for trackable in trackables:
 
@@ -105,7 +110,7 @@ def generate_report(user_id):
         track_tick = hp.get_trackable_tick(trackable[1])
         print(track_tick)
 
-        file_name = f"temp_img/{track_name}Plot.png"
+        file_name = os.path.join(PROJECT_ROOT, "temp_img", f"{track_name}Plot.png")
         created_files.append(file_name)
 
         dates_p, values_p = [], []
@@ -126,10 +131,10 @@ def generate_report(user_id):
         )
 
     # Render HTML
-    with open('report_layout.html.jinja') as f:
+    with open(template_path, encoding="utf-8") as f:
         tmpl = Template(f.read())
 
-    with open(filename_report_html, "w") as fh:
+    with open(report_html_path, "w", encoding="utf-8") as fh:
         fh.write(tmpl.render(
             name=user[0] + " " + user[1],
             user_info=user,
@@ -146,8 +151,8 @@ def generate_report(user_id):
     }
 
     pdfkit.from_file(
-        filename_report_html,
-        filename_report_pdf,
+        report_html_path,
+        report_pdf_path,
         configuration=config,
         options=options
     )

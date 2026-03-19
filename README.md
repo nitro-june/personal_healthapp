@@ -1,9 +1,9 @@
-# Personal Mental-Health Tracker
+﻿# Personal Mental-Health Tracker
 
 <br/>
 
 <p align="center">
-  <img width="150" height="150" src="Images/logo.jpg">
+  <img width="150" height="150" src="resources/images/logo.jpg">
 </p>
 
 <br/>
@@ -87,11 +87,11 @@ The questionaire for **eating habits** is based on **EAT-26**, which is the most
 
 #### Entity-Relationship Diagram
 
-![healthapp_ERD.png](Images/healthapp_ERD.png)
+![healthapp_ERD.png](resources/images/healthapp_ERD.png)
 
 #### Relational Data Model
 
-![healthapp_rDM.jpg](Images/healthapp_rDM.jpg)
+![healthapp_rDM.jpg](resources/images/healthapp_rDM.jpg)
 
 ---
 
@@ -99,15 +99,15 @@ The questionaire for **eating habits** is based on **EAT-26**, which is the most
 
 ### Landing Screen
 
-![showcase1.gif](Images/showcase1.gif)
+![showcase1.gif](resources/images/showcase1.gif)
 
 ### Create a User
 
-![showcase2.gif](Images/showcase2.gif)
+![showcase2.gif](resources/images/showcase2.gif)
 
 ### Select a User
 
-![showcase3.gif](Images/showcase3.gif)
+![showcase3.gif](resources/images/showcase3.gif)
 
 ### Track your Data
 

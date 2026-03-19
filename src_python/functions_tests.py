@@ -71,14 +71,15 @@ def eat26_scoring(comboboxes):
     # question 26 (reverse scored)
     q26_index = comboboxes[-1].currentIndex()
 
-    if q26_index == 0:
-        q26_score = 3
-    elif q26_index == 1:
-        q26_score = 2
-    elif q26_index == 2:
-        q26_score = 1
-    else:
-        q26_score = 0
+    match q26_index:
+        case 0:
+            q26_score = 3
+        case 1:
+            q26_score = 2
+        case 2:
+            q26_score = 1
+        case _:
+            q26_score = 0
 
     total_score += q26_score
     return total_score

@@ -3,10 +3,14 @@ import os
 from datetime import datetime
 from random import randint
 
-image_paths = ["Images/checkmark.png", "Images/alert_yellow.png", "Images/alert_red.png"]
-
-# Database path (use workspace-relative path)
-DB_PATH = os.path.join(os.path.dirname(__file__), "healthapp.db")
+# Database path in repository root, while this module lives in src_python.
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(PROJECT_ROOT, "healthapp.db")
+image_paths = [
+    os.path.join(PROJECT_ROOT, "resources", "images", "checkmark.png"),
+    os.path.join(PROJECT_ROOT, "resources", "images", "alert_yellow.png"),
+    os.path.join(PROJECT_ROOT, "resources", "images", "alert_red.png"),
+]
 
 
 def connect_db():
