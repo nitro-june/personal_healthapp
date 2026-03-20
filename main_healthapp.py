@@ -48,208 +48,6 @@ with open("MaterialDark.qss", "r") as f:
     _style = f.read()
 tracking_dialogues._style = _style
 
-# ----------- Action Windows for updating user infromation -----------
-
-class ChangeFN(QDialog):
-    def __init__(self, userID, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Change First Name")
-        self.userID = userID
-        request_user_dialog = pyqtSignal()
-
-        layout = QVBoxLayout()
-
-        self.new_fname = QLineEdit()
-        self.submit_fname_button = QPushButton("Submit")
-        self.submit_fname_button.clicked.connect(self.submit_fname)
-
-        layout.addWidget(QLabel("Enter New First Name:"))
-        layout.addWidget(self.new_fname)
-        layout.addWidget(self.submit_fname_button)
-
-        self.setLayout(layout)
-
-    def submit_fname(self):
-        try:
-            new_fname_text = self.new_fname.text()
-
-            if not new_fname_text.strip():
-                print("First name is empty")
-                return
-
-            if self.userID is None:
-                print("userID is None")
-                return
-
-            update_fname(self.userID, new_fname_text)
-            self.accept()
-
-        except Exception as e:
-            print("submit_fname error:", repr(e))
-
-class ChangeLN(QDialog):
-    def __init__(self, userID, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Change Last Name")
-        self.userID = userID
-
-        layout = QVBoxLayout()
-
-        self.new_lname = QLineEdit()
-        self.submit_lname_button = QPushButton("Submit")
-        self.submit_lname_button.clicked.connect(self.submit_lname)
-
-        layout.addWidget(QLabel("Enter New Last Name:"))
-        layout.addWidget(self.new_lname)
-        layout.addWidget(self.submit_lname_button)
-
-        self.setLayout(layout)
-
-    def submit_lname(self):
-        try:
-            new_lname_text = self.new_lname.text()
-
-            if not new_lname_text.strip():
-                print("Last name is empty")
-                return
-
-            if self.userID is None:
-                print("userID is None")
-                return
-
-            update_lname(self.userID, new_lname_text)
-            self.accept()
-
-        except Exception as e:
-            print("submit_lname error:", repr(e))
-
-class ChangeGender(QDialog):
-    def __init__(self, userID, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Change Gender")
-        self.userID = userID
-
-        layout = QVBoxLayout()
-
-        self.new_gender = QLineEdit()
-        self.submit_gender_button = QPushButton("Submit")
-        self.submit_gender_button.clicked.connect(self.submit_gender)
-
-        layout.addWidget(QLabel("Enter New Gender:"))
-        layout.addWidget(self.new_gender)
-        layout.addWidget(self.submit_gender_button)
-
-        self.setLayout(layout)
-
-    def submit_gender(self):
-        try:
-            new_gender_text = self.new_gender.text()
-
-            if not new_gender_text.strip():
-                print("Gender is empty")
-                return
-
-            if self.userID is None:
-                print("userID is None")
-                return
-
-            update_gender(self.userID, new_gender_text)
-            self.accept()
-
-        except Exception as e:
-            print("submit_gender error:", repr(e))
-
-class ChangeAge(QDialog):
-    def __init__(self, userID, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Change Age")
-        self.userID = userID
-
-        layout = QVBoxLayout()
-
-        self.new_age = QLineEdit()
-        self.submit_age_button = QPushButton("Submit")
-        self.submit_age_button.clicked.connect(self.submit_age)
-
-        layout.addWidget(QLabel("Enter New Age:"))
-        layout.addWidget(self.new_age)
-        layout.addWidget(self.submit_age_button)
-
-        self.setLayout(layout)
-
-    def submit_age(self):
-        try:
-            age_text = self.new_age.text().strip()
-
-            if not age_text:
-                self.show_error("Age cannot be empty.")
-                return
-
-            if self.userID is None:
-                self.show_error("User ID is missing.")
-                return
-
-            try:
-                age_value = int(age_text)
-            except ValueError:
-                self.show_error("Please enter a valid integer for age.")
-                return
-
-            update_age(self.userID, age_value)
-
-            self.accept()
-
-        except Exception as e:
-            self.show_error(f"Unexpected error: {e}")
-
-    def show_error(self, message):
-        msg_box = QMessageBox(self)
-        msg_box.setIcon(QMessageBox.Warning)
-        msg_box.setWindowTitle("Input Error")
-        msg_box.setText(message)
-        msg_box.exec_()
-
-class ChangeEmail(QDialog):
-    def __init__(self, userID, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Change E-Mail")
-        self.userID = userID
-
-        layout = QVBoxLayout()
-
-        self.new_email = QLineEdit()
-        self.submit_email_button = QPushButton("Submit")
-        self.submit_email_button.clicked.connect(self.submit_email)
-
-        layout.addWidget(QLabel("Enter New E-Mail:"))
-        layout.addWidget(self.new_email)
-        layout.addWidget(self.submit_email_button)
-
-        self.setLayout(layout)
-
-    def submit_email(self):
-        try:
-            new_email_text = self.new_email.text()
-
-            if not new_email_text.strip():
-                print("E-Mail is empty")
-                return
-
-            if self.userID is None:
-                print("userID is None")
-                return
-
-            update_email(self.userID, new_email_text)
-            self.accept()
-
-        except Exception as e:
-            print("submit_email error:", repr(e))
-
 # ----------- Custom Widgets for GUI -----------
 class MatplotlibWidget(QWidget):
     def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -683,26 +481,26 @@ class CreateUserWindow(QDialog):
         if result is None:
             QMessageBox.warning(self, "Error", "User was not created correctly.")
             return
-        userID = result[0]
+        user_id = result[0]
 
         # Checkboxes
         try:
             if self.check_input_mood.isChecked():
-                track_mood(userID)
+                track_mood(user_id)
             if self.check_input_sleep.isChecked():
-                track_sleep(userID)
+                track_sleep(user_id)
             if self.check_input_anxiety.isChecked():
-                track_anxiety(userID)
+                track_anxiety(user_id)
             if self.check_input_depression.isChecked():
-                track_depression(userID)
+                track_depression(user_id)
             if self.check_input_self_harm.isChecked():
-                track_self_harm(userID)
+                track_self_harm(user_id)
             if self.check_input_alcohol.isChecked():
-                track_alcohol_abuse(userID)
+                track_alcohol_abuse(user_id)
             if self.check_input_drugs.isChecked():
-                track_drug_abuse(userID)
+                track_drug_abuse(user_id)
             if self.check_input_eating.isChecked():
-                track_eating_habits(userID)
+                track_eating_habits(user_id)
         except Exception as e:
             QMessageBox.critical(self, "Tracking Error", f"Failed to track items: {e}")
             return
@@ -711,7 +509,7 @@ class CreateUserWindow(QDialog):
 
         self.accept()
 
-class UserIDDialog(QDialog):
+class UserIdDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -762,7 +560,7 @@ class UserIDDialog(QDialog):
         except Exception as e:
             print("Error retrieving userID:", e)
         
-class DeleteUserID(QDialog):
+class DeleteUserId(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -882,6 +680,11 @@ class MainWindow(QMainWindow):
         toolbar.addWidget(scrolling_label)
 
         self.status = self.statusBar()
+        self.status_label = QLabel()
+        status_font = self.status_label.font()
+        status_font.setPointSize(status_font.pointSize() + 2)
+        self.status_label.setFont(status_font)
+        self.status.addPermanentWidget(self.status_label)
         self.update_status()
 
         # --------- For Docking Widgets ----------
@@ -1092,11 +895,11 @@ class MainWindow(QMainWindow):
 
     # Status bar for userID is updated on select
     def update_status(self):
-        self.status.showMessage(f"Current User ID: {self.user_ID}")
+        self.status_label.setText(f"Current User ID: {self.user_ID}")
 
     # userID window is opened -> widgets in main, which require this ID are updated
     def open_user_dialog(self):
-        dialog = UserIDDialog(self)
+        dialog = UserIdDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             self.user_ID = dialog.user_ID
             update_login(self.user_ID)
@@ -1202,40 +1005,48 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", f"Failed to change style: {e}")
 
     def choose_and_copy_user_pfp(self):
-        # Ask the user to select a file
-        file_path, _ = QFileDialog.getOpenFileName(
-            None, "Select Profile Picture", "", "Images (*.png *.jpg *.jpeg *.bmp)"
-        )
+        try:
+            # Ask the user to select a file
+            file_path, _ = QFileDialog.getOpenFileName(
+                self, "Select Profile Picture", "", "Images (*.png *.jpg *.jpeg *.bmp)"
+            )
 
-        if not file_path:
-            print("No file selected")
+            if not file_path:
+                print("No file selected")
+                return None
+
+            # Read bytes once and keep them for future SQL BLOB insertion.
+            with open(file_path, "rb") as img_file:
+                self.user_pfp_bytes = img_file.read()
+
+            # Persist BLOB to DB only when a user is selected.
+            if self.user_ID is not None:
+                insert_pfp(self.user_ID, self.user_pfp_bytes)
+
+            # Persist raw bytes for debugging/export purposes.
+            img_byte_path = os.path.join(os.path.dirname(__file__), "img_byte.txt")
+            with open(img_byte_path, "wb") as img_out:
+                img_out.write(self.user_pfp_bytes)
+
+            # Target folder relative to the script
+            target_folder = os.path.join(os.path.dirname(__file__), "resources", "images")
+            os.makedirs(target_folder, exist_ok=True)
+
+            # Destination path
+            dest_file = os.path.join(target_folder, "user_pfp" + os.path.splitext(file_path)[1])
+
+            # Copy the selected file
+            shutil.copy(file_path, dest_file)
+
+            print(f"File copied to {dest_file}")
+            return dest_file
+        except Exception as e:
+            QMessageBox.warning(self, "Error", f"Failed to set profile picture: {e}")
             return None
-
-        # Read bytes once and keep them for future SQL BLOB insertion.
-        with open(file_path, "rb") as img_file:
-            self.user_pfp_bytes = img_file.read()
-
-        # Persist raw bytes for debugging/export purposes.
-        img_byte_path = os.path.join(os.path.dirname(__file__), "img_byte.txt")
-        with open(img_byte_path, "wb") as img_out:
-            img_out.write(self.user_pfp_bytes)
-
-        # Target folder relative to the script
-        target_folder = os.path.join(os.path.dirname(__file__), "resources", "images")
-        os.makedirs(target_folder, exist_ok=True)
-
-        # Destination path
-        dest_file = os.path.join(target_folder, "user_pfp" + os.path.splitext(file_path)[1])
-
-        # Copy the selected file
-        shutil.copy(file_path, dest_file)
-
-        print(f"File copied to {dest_file}")
-        return dest_file
 
     # ---------- Methods to open classes/widgets used in action bar of main menu ----------
     def create_delete_user(self):
-        dialog = DeleteUserID(self)
+        dialog = DeleteUserId(self)
         dialog.exec_()
 
     def create_user_box(self):

@@ -60,15 +60,15 @@ class UserInfoTest(QWidget):
 # ----- Classes for Widgets to change user information -----
 
 class UpdateUserDialog(QDialog):
-    def __init__(self, userID, parent=None):
+    def __init__(self, user_id, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Update User")
-        self.userID = userID
+        self.user_id = user_id
 
         layout = QVBoxLayout()
 
-        layout.addWidget(UserInfoTest(self.userID))
+        layout.addWidget(UserInfoTest(self.user_id))
 
         self.update_fn = QPushButton("Update First Name")
         self.update_fn.clicked.connect(self.open_change_fn)
@@ -81,7 +81,7 @@ class UpdateUserDialog(QDialog):
         self.update_email = QPushButton("Update Email")
         self.update_email.clicked.connect(self.open_change_email)
 
-        if self.userID != None:
+        if self.user_id is not None:
             layout.addWidget(self.update_fn)
             layout.addWidget(self.update_ln)
             layout.addWidget(self.update_gender)
@@ -91,33 +91,33 @@ class UpdateUserDialog(QDialog):
         self.setLayout(layout)
 
     def open_change_fn(self):
-        dialog = ChangeFN(self.userID, self)
+        dialog = ChangeFn(self.user_id, self)
         dialog.exec_()
 
     def open_change_ln(self):
-        dialog = ChangeLN(self.userID, self)
+        dialog = ChangeLn(self.user_id, self)
         dialog.exec_()
 
     def open_change_gender(self):
-        dialog = ChangeGender(self.userID, self)
+        dialog = ChangeGender(self.user_id, self)
         dialog.exec_()
 
     def open_change_age(self):
-        dialog = ChangeAge(self.userID, self)
+        dialog = ChangeAge(self.user_id, self)
         dialog.exec_()
 
     def open_change_email(self):
-        dialog = ChangeEmail(self.userID, self)
+        dialog = ChangeEmail(self.user_id, self)
         dialog.exec_()
 
 # ----------- Action Windows for updating user infromation -----------
 
-class ChangeFN(QDialog):
-    def __init__(self, userID, parent=None):
+class ChangeFn(QDialog):
+    def __init__(self, user_id, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Change First Name")
-        self.userID = userID
+        self.user_id = user_id
         request_user_dialog = pyqtSignal()
 
         layout = QVBoxLayout()
@@ -140,22 +140,22 @@ class ChangeFN(QDialog):
                 print("First name is empty")
                 return
 
-            if self.userID is None:
-                print("userID is None")
+            if self.user_id is None:
+                print("user_id is None")
                 return
 
-            update_fname(self.userID, new_fname_text)
+            update_fname(self.user_id, new_fname_text)
             self.accept()
 
         except Exception as e:
             print("submit_fname error:", repr(e))
 
-class ChangeLN(QDialog):
-    def __init__(self, userID, parent=None):
+class ChangeLn(QDialog):
+    def __init__(self, user_id, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Change Last Name")
-        self.userID = userID
+        self.user_id = user_id
 
         layout = QVBoxLayout()
 
@@ -177,22 +177,22 @@ class ChangeLN(QDialog):
                 print("Last name is empty")
                 return
 
-            if self.userID is None:
-                print("userID is None")
+            if self.user_id is None:
+                print("user_id is None")
                 return
 
-            update_lname(self.userID, new_lname_text)
+            update_lname(self.user_id, new_lname_text)
             self.accept()
 
         except Exception as e:
             print("submit_lname error:", repr(e))
 
 class ChangeGender(QDialog):
-    def __init__(self, userID, parent=None):
+    def __init__(self, user_id, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Change Gender")
-        self.userID = userID
+        self.user_id = user_id
 
         layout = QVBoxLayout()
 
@@ -214,22 +214,22 @@ class ChangeGender(QDialog):
                 print("Gender is empty")
                 return
 
-            if self.userID is None:
-                print("userID is None")
+            if self.user_id is None:
+                print("user_id is None")
                 return
 
-            update_gender(self.userID, new_gender_text)
+            update_gender(self.user_id, new_gender_text)
             self.accept()
 
         except Exception as e:
             print("submit_gender error:", repr(e))
 
 class ChangeAge(QDialog):
-    def __init__(self, userID, parent=None):
+    def __init__(self, user_id, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Change Age")
-        self.userID = userID
+        self.user_id = user_id
 
         layout = QVBoxLayout()
 
@@ -251,7 +251,7 @@ class ChangeAge(QDialog):
                 self.show_error("Age cannot be empty.")
                 return
 
-            if self.userID is None:
+            if self.user_id is None:
                 self.show_error("User ID is missing.")
                 return
 
@@ -261,7 +261,7 @@ class ChangeAge(QDialog):
                 self.show_error("Please enter a valid integer for age.")
                 return
 
-            update_age(self.userID, age_value)
+            update_age(self.user_id, age_value)
 
             self.accept()
 
@@ -276,11 +276,11 @@ class ChangeAge(QDialog):
         msg_box.exec_()
 
 class ChangeEmail(QDialog):
-    def __init__(self, userID, parent=None):
+    def __init__(self, user_id, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Change E-Mail")
-        self.userID = userID
+        self.user_id = user_id
 
         layout = QVBoxLayout()
 
@@ -302,11 +302,11 @@ class ChangeEmail(QDialog):
                 print("E-Mail is empty")
                 return
 
-            if self.userID is None:
-                print("userID is None")
+            if self.user_id is None:
+                print("user_id is None")
                 return
 
-            update_email(self.userID, new_email_text)
+            update_email(self.user_id, new_email_text)
             self.accept()
 
         except Exception as e:

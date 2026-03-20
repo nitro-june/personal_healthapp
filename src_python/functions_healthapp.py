@@ -18,14 +18,14 @@ def connect_db():
     return sqlite3.connect(DB_PATH)
 
 
-def get_user_trackable_id(userID, trackableID):
+def get_user_trackable_id(user_id, trackable_id):
     """Return the user_trackablesID for a given user and trackable, or None."""
     try:
         with connect_db() as conn:
             cur = conn.cursor()
             cur.execute(
                 "SELECT user_trackablesID FROM user_trackables WHERE userID = ? AND trackableID = ?",
-                (userID, trackableID),
+                (user_id, trackable_id),
             )
             row = cur.fetchone()
             return row[0] if row else None
@@ -67,33 +67,33 @@ def insert_user(user_fn, user_ln, user_gender, user_age, user_email):
         print(f"Error inserting user: {e}")
 
 # --------- Database entries for trackables selected ---------
-def track_mood(userID):
+def track_mood(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 2, date_now)
+                (user_id, 2, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_mood:", e)
 
-def track_anxiety(userID):
+def track_anxiety(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 1, date_now)
+                (user_id, 1, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_anxiety:", e)
 
-def track_sleep(userID):
+def track_sleep(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
@@ -101,76 +101,76 @@ def track_sleep(userID):
             # Insert two trackables for sleep
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 3, date_now)
+                (user_id, 3, date_now)
             )
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 4, date_now)
+                (user_id, 4, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_sleep:", e)
 
-def track_self_harm(userID):
+def track_self_harm(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 5, date_now)
+                (user_id, 5, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_self_harm:", e)
 
-def track_depression(userID):
+def track_depression(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 9, date_now)
+                (user_id, 9, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_depression:", e)
 
-def track_alcohol_abuse(userID):
+def track_alcohol_abuse(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 6, date_now)
+                (user_id, 6, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_alcohol_abuse:", e)
 
-def track_drug_abuse(userID):
+def track_drug_abuse(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 7, date_now)
+                (user_id, 7, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error in track_drug_abuse:", e)
 
-def track_eating_habits(userID):
+def track_eating_habits(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "INSERT INTO user_trackables (userID, trackableID, creationDate) VALUES (?, ?, ?)",
-                (userID, 8, date_now)
+                (user_id, 8, date_now)
             )
             conn.commit()
     except sqlite3.Error as e:
@@ -186,23 +186,23 @@ def give_message():
     return message_list[randint(0, len(message_list) - 1)]
 
 # Gets the user trackables and the values of these trackables
-def get_user_trackables(userID):
+def get_user_trackables(user_id):
     user_trackables = []
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT user_trackablesID, trackableID from user_trackables WHERE userID = ? ORDER BY trackableID ASC", (userID, ))
+            cursor.execute("SELECT user_trackablesID, trackableID from user_trackables WHERE userID = ? ORDER BY trackableID ASC", (user_id, ))
             user_trackables = cursor.fetchall()
     except sqlite3.Error as e:
         print("Error in selecting user trackables:", e)
     return user_trackables
 
 # Gets the trackable name from the trackable ID and returns it in a tuple in a list
-def get_trackable_name(trackableID):
+def get_trackable_name(trackable_id):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT name from trackables WHERE trackableID = ?", (trackableID, ))
+            cursor.execute("SELECT name from trackables WHERE trackableID = ?", (trackable_id, ))
             row = cursor.fetchone()
             return row[0] if row else None
     except sqlite3.Error as e:
@@ -210,29 +210,29 @@ def get_trackable_name(trackableID):
         return None
 
 # Get the trackable max y
-def get_trackable_maxy(trackableID):
+def get_trackable_maxy(trackable_id):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT max_value from trackables WHERE trackableID = ?", (trackableID, ))
+            cursor.execute("SELECT max_value from trackables WHERE trackableID = ?", (trackable_id, ))
             row = cursor.fetchone()
             return row[0] if row else None
     except sqlite3.Error as e:
         print("Error in selecting trackable maxy:", e)
         return None
 
-def get_trackable_tick(trackableID):
+def get_trackable_tick(trackable_id):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT tick_count from trackables WHERE trackableID = ?", (trackableID, ))
+            cursor.execute("SELECT tick_count from trackables WHERE trackableID = ?", (trackable_id, ))
             row = cursor.fetchone()
             return row[0] if row else None
     except sqlite3.Error as e:
         print("Error in selecting trackable tick:", e)
         return None
 
-def get_values(user_trackableID):
+def get_values(user_trackable_id):
     values = []
     try:
         with connect_db() as conn:
@@ -242,13 +242,13 @@ def get_values(user_trackableID):
                 "FROM user_trackables_entries "
                 "WHERE user_trackablesID = ? "
                 "ORDER BY entry_date ASC",
-                (user_trackableID,)
+                (user_trackable_id,)
             )
             values = cursor.fetchall()
     except sqlite3.Error as e:
-        print(f"Database error for user_trackableID {user_trackableID}: {e}")
+        print(f"Database error for user_trackable_id {user_trackable_id}: {e}")
     except Exception as e:
-        print(f"Unexpected error for user_trackableID {user_trackableID}: {e}")
+        print(f"Unexpected error for user_trackable_id {user_trackable_id}: {e}")
     return values
 
 
@@ -281,79 +281,92 @@ def get_user_id_by_email(email):
         return None
 
 # Updates user login date
-def update_login(userID):
+def update_login(user_id):
     try:
         date_now = str(datetime.now())[:10]
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE users SET last_login = ? WHERE userID = ?",
-                (date_now, userID)
+                (date_now, user_id)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Error updating login:", e)
 
 # --------- Functions for changing user data ---------
-def update_fname(userID, new_fname):
+def update_fname(user_id, new_fname):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE users SET first_name = ? WHERE userID = ?",
-                (new_fname, userID)
+                (new_fname, user_id)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Database error:", e)
         raise
 
-def update_lname(userID, new_lname):
+def update_lname(user_id, new_lname):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE users SET last_name = ? WHERE userID = ?",
-                (new_lname, userID)
+                (new_lname, user_id)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Database error:", e)
         raise
 
-def update_gender(userID, new_gender):
+def update_gender(user_id, new_gender):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE users SET gender = ? WHERE userID = ?",
-                (new_gender, userID)
+                (new_gender, user_id)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Database error:", e)
         raise
 
-def update_age(userID, new_age):
+def update_age(user_id, new_age):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE users SET age = ? WHERE userID = ?",
-                (new_age, userID)
+                (new_age, user_id)
             )
             conn.commit()
     except sqlite3.Error as e:
         print("Database error:", e)
         raise
 
-def update_email(userID, new_email):
+def update_email(user_id, new_email):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
             cursor.execute(
                 "UPDATE users SET email = ? WHERE userID = ?",
-                (new_email, userID)
+                (new_email, user_id)
+            )
+            conn.commit()
+    except sqlite3.Error as e:
+        print("Database error:", e)
+        raise
+
+def insert_pfp(user_id, image_data):
+    try:
+        with connect_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE users SET pfp_image = ? WHERE userID = ?",
+                (image_data, user_id)
             )
             conn.commit()
     except sqlite3.Error as e:
@@ -361,7 +374,7 @@ def update_email(userID, new_email):
         raise
 
 # Simple SQLite command to get user row
-def get_user_info(userID):
+def get_user_info(user_id):
     try:
         with connect_db() as conn:
             cursor = conn.cursor()
@@ -369,15 +382,15 @@ def get_user_info(userID):
                 SELECT first_name, last_name, gender, age, created_at, last_login, email 
                 FROM users 
                 WHERE userID = ?
-            """, (userID,))
+            """, (user_id,))
             user_info = cursor.fetchone()
             return user_info
     except sqlite3.Error as e:
         print("Error selecting user information:", e)
         return None
 
-def delete_user(userID):
-    trackables = get_user_trackables(userID)
+def delete_user(user_id):
+    trackables = get_user_trackables(user_id)
 
     try:
         with connect_db() as conn:
@@ -398,12 +411,12 @@ def delete_user(userID):
 
             cursor.execute(
                 "DELETE FROM user_trackables WHERE userID = ?",
-                (userID,)
+                (user_id,)
             )
 
             cursor.execute(
                 "DELETE FROM users WHERE userID = ?",
-                (userID,)
+                (user_id,)
             )
 
     except sqlite3.Error as e:
