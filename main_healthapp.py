@@ -24,6 +24,7 @@ from src_python.functions_tests import *
 from src_python.create_report import generate_report
 import src_python.ui_tracking_dialogues as tracking_dialogues
 from src_python.ui_tracking_dialogues import *
+from src_python.ui_updateuser_dialogues import *
 
 # ---------- Create Databse if needed -----------
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -383,47 +384,6 @@ class MatplotlibWidget(QWidget):
         self.axes.set_ylim(0, yaxis)
         self.axes.set_yticks(range(0, yaxis + 1, step))
 
-class UserInfoTest(QWidget):
-    def __init__(self, user_ID, parent=None):
-        super().__init__(parent)
-
-        # Setup class widget
-        self.user_ID = user_ID
-
-        layout = QGridLayout(self)
-        self.setLayout(layout)
-
-        # Add content
-        user_info = QLabel("User Information")
-        user_info.setFont(QFont("Arial", 14))
-        layout.addWidget(user_info, 0, 0, 1, 2)
-
-        # SQLite command that gets entire user row, besides ID
-        user_info_values = get_user_info(self.user_ID)
-        if not user_info_values:
-            layout.addWidget(QLabel("No user information found."), 1, 0)
-            return
-
-        # Adds user information to content
-        full_name = f"{str(user_info_values[0])} {str(user_info_values[1])}"
-        layout.addWidget(QLabel("Name:"), 1, 0)
-        layout.addWidget(QLabel(full_name), 1, 1)
-
-        layout.addWidget(QLabel("Age:"), 2, 0)
-        layout.addWidget(QLabel(str(user_info_values[3])), 2, 1)
-
-        layout.addWidget(QLabel("Gender:"), 3, 0)
-        layout.addWidget(QLabel(str(user_info_values[2])), 3, 1)
-
-        layout.addWidget(QLabel("E-Mail:"), 4, 0)
-        layout.addWidget(QLabel(str(user_info_values[6])), 4, 1)
-
-        layout.addWidget(QLabel("Created on:"), 5, 0)
-        layout.addWidget(QLabel(str(user_info_values[4])), 5, 1)
-
-        layout.addWidget(QLabel("Last login:"), 6, 0)
-        layout.addWidget(QLabel(str(user_info_values[5])), 6, 1)
-
 class UserSelfHarm(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -750,57 +710,6 @@ class CreateUserWindow(QDialog):
         QMessageBox.information(self, "Success", f"User '{fn_input_text} {ln_input_text}' created successfully!")
 
         self.accept()
-
-class UpdateUserDialog(QDialog):
-    def __init__(self, userID, parent=None):
-        super().__init__(parent)
-
-        self.setWindowTitle("Update User")
-        self.userID = userID
-
-        layout = QVBoxLayout()
-
-        layout.addWidget(UserInfoTest(self.userID))
-
-        self.update_fn = QPushButton("Update First Name")
-        self.update_fn.clicked.connect(self.open_change_fn)
-        self.update_ln = QPushButton("Update Last Name")
-        self.update_ln.clicked.connect(self.open_change_ln)
-        self.update_gender = QPushButton("Update Gender")
-        self.update_gender.clicked.connect(self.open_change_gender)
-        self.update_age = QPushButton("Update Age")
-        self.update_age.clicked.connect(self.open_change_age)
-        self.update_email = QPushButton("Update Email")
-        self.update_email.clicked.connect(self.open_change_email)
-
-        if self.userID != None:
-            layout.addWidget(self.update_fn)
-            layout.addWidget(self.update_ln)
-            layout.addWidget(self.update_gender)
-            layout.addWidget(self.update_age)
-            layout.addWidget(self.update_email)
-
-        self.setLayout(layout)
-
-    def open_change_fn(self):
-        dialog = ChangeFN(self.userID, self)
-        dialog.exec_()
-
-    def open_change_ln(self):
-        dialog = ChangeLN(self.userID, self)
-        dialog.exec_()
-
-    def open_change_gender(self):
-        dialog = ChangeGender(self.userID, self)
-        dialog.exec_()
-
-    def open_change_age(self):
-        dialog = ChangeAge(self.userID, self)
-        dialog.exec_()
-
-    def open_change_email(self):
-        dialog = ChangeEmail(self.userID, self)
-        dialog.exec_()
 
 class UserIDDialog(QDialog):
     def __init__(self, parent=None):
