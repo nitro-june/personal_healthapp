@@ -633,7 +633,7 @@ class TrackEatingHabitsWindow(QDialog):
         self.resize(win_width, win_height)
         self.center()
 
-        self.setStyleSheet(_style)
+        #self.setStyleSheet(_style)
 
         layout = QVBoxLayout()
 
@@ -651,31 +651,9 @@ class TrackEatingHabitsWindow(QDialog):
         eat26_label_q6 = QLabel("I feel that others pressure me to eat.")
         eat26_label_q7 = QLabel("I have engaged in secret eating. (eating in private / secret)")
         eat26_label_q8 = QLabel("I feel extremely guilty about eating.")
-        eat26_label_q9 = QLabel("I vomit after I have eaten.")
-        eat26_label_q10 = QLabel("I feel extremely guilty after eating.")
-        eat26_label_q11 = QLabel("I am preoccupied with a desire to be thinner.")
-        eat26_label_q12 = QLabel("I think about burning up calories when I exercise.")
-        eat26_label_q13 = QLabel("Other people think that I am too thin.")
-        eat26_label_q14 = QLabel("I am preoccupied with the thought of having fat on my body.")
-        eat26_label_q15 = QLabel("I take longer than others to eat my meals.")
-        eat26_label_q16 = QLabel("I avoid foods with sugar in them.")
-        eat26_label_q17 = QLabel("I eat diet foods.")
-        eat26_label_q18 = QLabel("I feel that food controls my life.")
-        eat26_label_q19 = QLabel("I display self control around food.")
-        eat26_label_q20 = QLabel("I feel that others pressure me to eat.")
-        eat26_label_q21 = QLabel("I give too much time and thought to food.")
-        eat26_label_q22 = QLabel("I feel uncomfortable after eating sweets.")
-        eat26_label_q23 = QLabel("I engage in dieting behaviour.")
-        eat26_label_q24 = QLabel("I like my stomach to be empty.")
-        eat26_label_q25 = QLabel("I have the impulse to vomit after meals.")
-        eat26_label_q26 = QLabel("I enjoy trying new rich foods.")
 
         eat26_label_list = (eat26_label_q1, eat26_label_q2, eat26_label_q3, eat26_label_q4, eat26_label_q5,
-                            eat26_label_q6, eat26_label_q7, eat26_label_q8, eat26_label_q9, eat26_label_q10,
-                            eat26_label_q11, eat26_label_q12, eat26_label_q13, eat26_label_q14, eat26_label_q15,
-                            eat26_label_q16, eat26_label_q17, eat26_label_q18, eat26_label_q19, eat26_label_q20,
-                            eat26_label_q21, eat26_label_q22, eat26_label_q23, eat26_label_q24, eat26_label_q25,
-                            eat26_label_q26)
+                            eat26_label_q6, eat26_label_q7, eat26_label_q8)
 
         self.eat26_combobox_q1 = QComboBox()
         self.eat26_combobox_q2 = QComboBox()
@@ -685,35 +663,11 @@ class TrackEatingHabitsWindow(QDialog):
         self.eat26_combobox_q6 = QComboBox()
         self.eat26_combobox_q7 = QComboBox()
         self.eat26_combobox_q8 = QComboBox()
-        self.eat26_combobox_q9 = QComboBox()
-        self.eat26_combobox_q10 = QComboBox()
-        self.eat26_combobox_q11 = QComboBox()
-        self.eat26_combobox_q12 = QComboBox()
-        self.eat26_combobox_q13 = QComboBox()
-        self.eat26_combobox_q14 = QComboBox()
-        self.eat26_combobox_q15 = QComboBox()
-        self.eat26_combobox_q16 = QComboBox()
-        self.eat26_combobox_q17 = QComboBox()
-        self.eat26_combobox_q18 = QComboBox()
-        self.eat26_combobox_q19 = QComboBox()
-        self.eat26_combobox_q20 = QComboBox()
-        self.eat26_combobox_q21 = QComboBox()
-        self.eat26_combobox_q22 = QComboBox()
-        self.eat26_combobox_q23 = QComboBox()
-        self.eat26_combobox_q24 = QComboBox()
-        self.eat26_combobox_q25 = QComboBox()
-        self.eat26_combobox_q26 = QComboBox()
 
         self.eat26_combobox_list = (
             self.eat26_combobox_q1, self.eat26_combobox_q2, self.eat26_combobox_q3,
             self.eat26_combobox_q4, self.eat26_combobox_q5, self.eat26_combobox_q6,
-            self.eat26_combobox_q7, self.eat26_combobox_q8, self.eat26_combobox_q9,
-            self.eat26_combobox_q10, self.eat26_combobox_q11, self.eat26_combobox_q12,
-            self.eat26_combobox_q13, self.eat26_combobox_q14, self.eat26_combobox_q15,
-            self.eat26_combobox_q16, self.eat26_combobox_q17, self.eat26_combobox_q18,
-            self.eat26_combobox_q19, self.eat26_combobox_q20, self.eat26_combobox_q21,
-            self.eat26_combobox_q22, self.eat26_combobox_q23, self.eat26_combobox_q24,
-            self.eat26_combobox_q25, self.eat26_combobox_q26
+            self.eat26_combobox_q7, self.eat26_combobox_q8
         )
 
         for cb in self.eat26_combobox_list:
@@ -724,7 +678,7 @@ class TrackEatingHabitsWindow(QDialog):
 
         content_layout.addWidget(eat26_label_explanation)
 
-        for i in range(26):
+        for i in range(8):
             content_layout.addWidget(eat26_label_list[i])
             content_layout.addWidget(self.eat26_combobox_list[i])
 

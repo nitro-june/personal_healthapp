@@ -859,7 +859,11 @@ class MainWindow(QMainWindow):
                     linestyle='-',
                     linewidth=2
                 )
-                plot_eating_habits.set_yaxis(78, step=5)
+
+                eat_maxy = int(get_trackable_maxy(8))
+                eat_tick = int(get_trackable_tick(8))
+
+                plot_eating_habits.set_yaxis(eat_maxy, step=eat_tick)
                 plot_eating_habits.set_overlay("resources/images/forapp1.png", width=230, height=200, corner="bottom-left")
 
                 tabbed_widgets.append(plot_eating_habits)
@@ -1033,7 +1037,7 @@ class MainWindow(QMainWindow):
             os.makedirs(target_folder, exist_ok=True)
 
             # Destination path
-            dest_file = os.path.join(target_folder, "user_pfp" + os.path.splitext(file_path)[1])
+            dest_file = os.path.join(target_folder, str(self.user_ID) + os.path.splitext(file_path)[1])
 
             # Copy the selected file
             shutil.copy(file_path, dest_file)

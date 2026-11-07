@@ -72,7 +72,7 @@ VALUES (?, ?, ?, ?)
     ("Self Harm", "Self-harm, or self-injury, is when a person hurts his or her own body on purpose. The injuries may be minor, but sometimes they can be severe.", 0.0, 1.0),
     ("Alcohol Abuse", "Recurrent use of alcohol resulting in a failure to fulfill major role obligations at work, school, or home.", 0.0, 12.0),
     ("Drug Abuse", "Recurrent use of drugs resulting in a failure to fulfill major role obligations at work, school, or home.", 0.0, 1.0),
-    ("Eating Habits", "Eating habits are the consistent, often unconscious patterns of how, what, when, and why we eat, influenced by culture, environment, psychology, and lifestyle, forming a crucial part of our daily behavior that impacts overall health by determining our nutrient intake and disease risk.", 0.0, 78.0),
+    ("Eating Habits", "Eating habits are the consistent, often unconscious patterns of how, what, when, and why we eat, influenced by culture, environment, psychology, and lifestyle, forming a crucial part of our daily behavior that impacts overall health by determining our nutrient intake and disease risk.", 0.0, 24.0),
     ("Depression", "Depression is a mental health condition marked by persistent sadness, loss of interest or pleasure, low energy, and difficulty functioning in daily life.", 0.0, 27.0)
 ])
 
